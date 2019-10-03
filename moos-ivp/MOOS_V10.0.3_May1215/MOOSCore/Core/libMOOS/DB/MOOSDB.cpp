@@ -260,14 +260,14 @@ void CMOOSDB::OnPrintVersionAndExit()
 bool CMOOSDB::Run(int argc,  char * argv[] )
 {
 
-	MOOS::CommandLineParser P(argc,argv);
+  MOOS::CommandLineParser P(argc,argv);
+  
+  
+  //mission file could be first free parameter
+  std::string mission_file = P.GetFreeParameter(0, "Mission.moos");
 
-
-	//mission file could be first free parameter
-	std::string mission_file = P.GetFreeParameter(0, "Mission.moos");
-
-    //set up mission file
-    m_MissionReader.SetFile(mission_file);
+  //set up mission file
+  m_MissionReader.SetFile(mission_file);
 	
     ///////////////////////////////////////////////////////////
     //what is our community name?
