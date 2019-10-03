@@ -1,0 +1,19 @@
+.svn
+.DS_Store
+build/
+target/
+.class
+moos-ivp
+Library
+moos-ivp-extend
+.project
+.cproject
+output_Prism.txt
+dependency-reduced-pom.xml
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+/out/
