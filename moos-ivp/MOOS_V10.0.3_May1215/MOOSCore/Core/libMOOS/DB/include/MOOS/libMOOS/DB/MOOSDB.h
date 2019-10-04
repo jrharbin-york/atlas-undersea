@@ -139,7 +139,7 @@ protected:
     bool OnRegister(CMOOSMsg & Msg);
     bool OnUnRegister(CMOOSMsg &Msg);
     bool OnNotify(CMOOSMsg & Msg);
-    bool ProcessMsg(CMOOSMsg & MsgRx,MOOSMSG_LIST & MsgLstTx);
+    virtual bool ProcessMsg(CMOOSMsg & MsgRx,MOOSMSG_LIST & MsgLstTx);
     double GetStartTime(){return m_dfStartTime;}
     void OnPrintVersionAndExit();
 

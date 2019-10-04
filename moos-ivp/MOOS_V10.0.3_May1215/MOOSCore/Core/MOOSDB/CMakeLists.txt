@@ -23,12 +23,22 @@ foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
     message(STATUS "adding -D${DEFINE} as required by MOOS")
 endforeach()
 
+set(APR_INC /usr/include/apr-1)
 
-include_directories( ${${EXECNAME}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
-add_executable(${EXECNAME} ${SRCS} )
-target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+find_path(ActiveMQ_INCLUDE_DIR
+           NAMES ActiveMQCPP.h
+           HINTS /usr/local/include/activemq-cpp-3.9.5/
+           PATH_SUFFIXES activemq/library
+           DOC "ActiveMQ include files")
 
+find_library(ActiveMQ_LIBRARY
+              NAMES activemq-cpp
+              HINTS $ENV{HOME}/Tools/activemq-cpp-3.8.4/
+              DOC "ActiveMQ library")
 
+include_directories( ${${EXECNAME}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS} ${ActiveMQ_INCLUDE_DIR} ${APR_INC})
+add_executable(${EXECNAME} ${SRCS})
+target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES} ${ActiveMQ_LIBRARY})
 
 INSTALL(TARGETS ${EXECNAME}
   RUNTIME DESTINATION bin
