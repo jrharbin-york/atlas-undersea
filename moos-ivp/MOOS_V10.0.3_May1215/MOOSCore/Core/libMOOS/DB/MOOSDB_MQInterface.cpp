@@ -43,6 +43,9 @@
 #include <iostream>
 #include <memory>
 
+#include "MOOS/libMOOS/DB/MOOSDB_MQ.h"
+#include "MOOS/libMOOS/DB/ATLASLink.h"
+
 using namespace activemq::core;
 using namespace decaf::util::concurrent;
 using namespace decaf::util;
@@ -50,120 +53,154 @@ using namespace decaf::lang;
 using namespace cms;
 using namespace std;
 
-class ATLASLinkProducer : public Runnable {
-private:
+ATLASLinkProducer::~ATLASLinkProducer()
+{
+    cleanup();
+}
 
-    Connection* connection;
-    Session* session;
-    Destination* destination;
-    MessageProducer* producer;
-    int numMessages;
-    bool useTopic;
-    bool sessionTransacted;
-    std::string brokerURI;
+ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI)
+{
+    try {
+	// Create a ConnectionFactory
+	auto_ptr<ConnectionFactory> connectionFactory(
+	    ConnectionFactory::createCMSConnectionFactory(brokerURI));
+	
+	// Create a Connection
+	connection = connectionFactory->createConnection();
+	connection->start();
+	
+	// Create a Session
+	if (this->sessionTransacted) {
+	    session = connection->createSession(Session::SESSION_TRANSACTED);
+	} else {
+	    session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
+	}
+	
+	destination = session->createTopic("FAULT-LINK-FROM-SIM");
+	
+	// Create a MessageProducer from the Session to the Topic or Queue
+	producer = session->createProducer(destination);
+	producer->setDeliveryMode(DeliveryMode::NON_PERSISTENT);
+    } catch (CMSException& e) {
+	e.printStackTrace();
+    }
+}
 
-private:
-
-    ATLASLinkProducer(const ATLASLinkProducer&);
-    ATLASLinkProducer& operator=(const ATLASLinkProducer&);
-
-public:
-
-    ATLASLinkProducer(const std::string& brokerURI, int numMessages, bool useTopic = false, bool sessionTransacted = false) :
-        connection(NULL),
-        session(NULL),
-        destination(NULL),
-        producer(NULL),
-        numMessages(numMessages),
-        useTopic(useTopic),
-        sessionTransacted(sessionTransacted),
-        brokerURI(brokerURI) {
+void ATLASLinkProducer::cleanup() {
+    if (connection != NULL) {
+	try {
+	    connection->close();
+	} catch (cms::CMSException& ex) {
+	    ex.printStackTrace();
+	}
     }
 
-    virtual ~ATLASLinkProducer(){
-        cleanup();
-    }
-
-    void close() {
-        this->cleanup();
-    }
-
-    virtual void run() {
-
-        try {
-
-            // Create a ConnectionFactory
-            auto_ptr<ConnectionFactory> connectionFactory(
-                ConnectionFactory::createCMSConnectionFactory(brokerURI));
-
-            // Create a Connection
-            connection = connectionFactory->createConnection();
-            connection->start();
-
-            // Create a Session
-            if (this->sessionTransacted) {
-                session = connection->createSession(Session::SESSION_TRANSACTED);
-            } else {
-                session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
-            }
-
-            // Create the destination (Topic or Queue)
-            if (useTopic) {
-                destination = session->createTopic("TEST.FOO");
-            } else {
-                destination = session->createQueue("TEST.FOO");
-            }
-
-            // Create a MessageProducer from the Session to the Topic or Queue
-            producer = session->createProducer(destination);
-            producer->setDeliveryMode(DeliveryMode::NON_PERSISTENT);
-
-            // Create the Thread Id String
-            string threadIdStr = Long::toString(Thread::currentThread()->getId());
-
-            // Create a messages
-            string text = (string) "Hello world! from thread " + threadIdStr;
-
-            for (int ix = 0; ix < numMessages; ++ix) {
-                std::auto_ptr<TextMessage> message(session->createTextMessage(text));
-                message->setIntProperty("Integer", ix);
-                printf("Sent message #%d from thread %s\n", ix + 1, threadIdStr.c_str());
-                producer->send(message.get());
-            }
-
-        } catch (CMSException& e) {
-            e.printStackTrace();
-        }
-    }
-
-private:
-
-    void cleanup() {
-
-        if (connection != NULL) {
-            try {
-                connection->close();
-            } catch (cms::CMSException& ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        // Destroy resources.
-        try {
-            delete destination;
-            destination = NULL;
-            delete producer;
-            producer = NULL;
-            delete session;
-            session = NULL;
-            delete connection;
-            connection = NULL;
-        } catch (CMSException& e) {
-            e.printStackTrace();
-        }
+    // Destroy resources.
+    try {
+	delete destination;
+	destination = NULL;
+	delete producer;
+	producer = NULL;
+	delete session;
+	session = NULL;
+	delete connection;
+	connection = NULL;
+    } catch (CMSException& e) {
+	e.printStackTrace();
     }
 };
 
+void ATLASLinkProducer::sendToMQ(CMOOSMsg & msg)
+{
+    
+}
+
+ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI)
+{
+    this->db = db;
+    // Create a ConnectionFactory
+    auto_ptr<ConnectionFactory> connectionFactory(
+	ConnectionFactory::createCMSConnectionFactory(brokerURI));
+    
+    // Create a Connection
+    connection = connectionFactory->createConnection();
+    connection->start();
+    //connection->setExceptionListener(this);
+    
+    // Create a Session
+    if (this->sessionTransacted == true) {
+	session = connection->createSession(Session::SESSION_TRANSACTED);
+    } else {
+	session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
+    }
+    
+    // Create the destination (Topic or Queue)
+    destination = session->createTopic("FAULT-LINK-TO-SIM");
+    // Create a MessageConsumer from the Session to the Topic or Queue
+    consumer = session->createConsumer(destination);
+    consumer->setMessageListener(this);
+}
+
+ATLASLinkConsumer::~ATLASLinkConsumer() {
+    cleanup();
+}
+
+void ATLASLinkConsumer::cleanup() {
+    if (connection != NULL) {
+	try {
+	    connection->close();
+	} catch (cms::CMSException& ex) {
+	    ex.printStackTrace();
+	}
+    }
+    
+    // Destroy resources.
+    try {
+	delete destination;
+	destination = NULL;
+	delete consumer;
+	consumer = NULL;
+	delete session;
+	session = NULL;
+	delete connection;
+	connection = NULL;
+    } catch (CMSException& e) {
+	e.printStackTrace();
+    }
+}
+
+void ATLASLinkConsumer::onMessage(const Message* message)
+{
+    // Need to convert this back into MOOS message
+    static int count = 0;
+    
+    try {
+	count++;
+	const TextMessage* textMessage = dynamic_cast<const TextMessage*> (message);
+	string text = "";
+	
+	if (textMessage != NULL) {
+	    text = textMessage->getText();
+	} else {
+	    text = "NOT A TEXTMESSAGE!";
+	}
+	
+	printf("Message #%d Received: %s\n", count, text.c_str());
+	
+    } catch (CMSException& e) {
+	e.printStackTrace();
+    }
+    
+    // Commit all messages.
+    if (this->sessionTransacted) {
+	session->commit();
+    }
+    
+    // No matter what, tag the count down latch until done.
+    //doneLatch.countDown();
+}
+
+/*
 class ATLASLinkConsumer : public ExceptionListener,
                            public MessageListener,
                            public Runnable {
@@ -302,28 +339,7 @@ public:
 
 private:
 
-    void cleanup() {
-        if (connection != NULL) {
-            try {
-                connection->close();
-            } catch (cms::CMSException& ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        // Destroy resources.
-        try {
-            delete destination;
-            destination = NULL;
-            delete consumer;
-            consumer = NULL;
-            delete session;
-            session = NULL;
-            delete connection;
-            connection = NULL;
-        } catch (CMSException& e) {
-            e.printStackTrace();
-        }
-    }
+    
 };
 
+*/

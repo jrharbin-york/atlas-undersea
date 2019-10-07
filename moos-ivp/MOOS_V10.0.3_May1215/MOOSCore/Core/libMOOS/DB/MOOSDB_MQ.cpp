@@ -8,9 +8,10 @@
 CMOOSDBMQ::CMOOSDBMQ()
 {
     std::cout << "Creating CMOOSDBMQ... activating ActiveMQ interface\n";
+    
     startMQInterface();
-    ATLASLinkProducer& prod = new ATLASLinkProducer(this);
-    ATLASLinkConsumer& cons = new ATLASLinkConsumer(this);
+    prod = new ATLASLinkProducer(this, brokerURI);
+    cons = new ATLASLinkConsumer(this, brokerURI);
     std::cout << "Completed" << endl;
 }
 
@@ -45,7 +46,7 @@ bool CMOOSDBMQ::ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx)
 bool CMOOSDBMQ::OnNotify(CMOOSMsg &Msg)
 {
     if (sendMsgOut) {
-	prod.sendToMQ(Msg);
+	prod->sendToMQ(Msg);
     } else {
     cout << "Ignoring msg!!!";
     }
@@ -53,7 +54,7 @@ bool CMOOSDBMQ::OnNotify(CMOOSMsg &Msg)
 }
 
 bool CMOOSDBMQ::fromMQ(CMOOSMsg &Msg) {
-    super::OnNotify(Msg);
+    return CMOOSDB::OnNotify(Msg);
 }
 
 void CMOOSDBMQ::startMQInterface() {
