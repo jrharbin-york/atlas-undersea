@@ -7,7 +7,9 @@ public:
     CMOOSDBMQ();
 
 private:
+    bool sendMsgOut = true;
+    ATLASLinkProducer prod;
+    ATLASLinkConsumer cons;
     void startMQInterface();
     void stopMQInterface();
 };
-

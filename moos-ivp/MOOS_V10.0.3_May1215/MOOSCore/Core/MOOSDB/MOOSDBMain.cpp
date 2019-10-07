@@ -27,6 +27,7 @@
 #include "MOOS/libMOOS/MOOSLib.h"
 
 #include "MOOS/libMOOS/DB/MOOSDB.h"
+#include "MOOS/libMOOS/DB/MOOSDB_MQ.h"
 #include <iostream>
 #include <string>
 
@@ -34,7 +35,7 @@ int main(int argc , char * argv[])
 {
 
     //this is a main MOOS DB Object
-    CMOOSDB DB;
+    CMOOSDBMQ DB;
     DB.Run(argc,argv);
 
     //nothing to do - all the threads in the DB object

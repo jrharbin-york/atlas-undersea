@@ -78,6 +78,8 @@ set(THIRDPARTY_SOURCES
 
 SET(DB_SOURCES
     DB/MOOSDB.cpp
+    DB/MOOSDB_MQ.cpp
+    DB/MOOSDB_MQInterface.cpp
     DB/MOOSDBVar.cpp
     DB/MOOSRegisterInfo.cpp
     DB/MsgFilter.cpp
@@ -91,6 +93,18 @@ SET(DB_SOURCES
 set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ${DB_SOURCES}) 
 
 include(PlatformDefines)
+
+include_directories(SYSTEM /usr/local/include/activemq-cpp-3.9.5 /usr/include/apr-1)
+link_directories(/usr/local/lib)
+
+
+# Need to do something like this 
+#find_path(WcharPath wchar.h PATHS /usr/local/arm/4.3.1-eabi-armv6/usr/include)
+#if(WcharPath)
+#  include_directories(SYSTEM ${WcharPath})
+#else()
+#  message(FATAL_ERROR "Failed to find wchar.h")
+#endif()
 
 ##############   FAST COMMS?   ################
 #do we want to use the new fast asynchronous client architecture?

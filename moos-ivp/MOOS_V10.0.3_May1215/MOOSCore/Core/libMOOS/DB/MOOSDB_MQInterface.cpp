@@ -17,6 +17,11 @@
 
 // START SNIPPET: demo
 
+// There is a producer that sends out the incoming Notify(), and a consumer
+// on the ATLAS middleware side
+// Then there is a consumer on this side that receives the messages that
+// have been approved, modified by the fault generation system
+
 #include <activemq/library/ActiveMQCPP.h>
 #include <decaf/lang/Thread.h>
 #include <decaf/lang/Runnable.h>
