@@ -179,8 +179,7 @@ void ATLASLinkConsumer::cleanup() {
 void ATLASLinkConsumer::onMessage(const Message* message)
 {
     // Need to convert this back into MOOS message
-    static int count = 0;
-    
+    static int count = 0;    
     try {
 	count++;
 	const TextMessage* textMessage = dynamic_cast<const TextMessage*> (message);
