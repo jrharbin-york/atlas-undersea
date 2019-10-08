@@ -31,7 +31,8 @@ public:
     bool ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx);
     bool OnNotify(CMOOSMsg &Msg);
     CMOOSDBMQ();
-
+    bool fromMQ(CMOOSMsg &Msg);
+    
 private:
     bool sendMsgOut = true;
     const string brokerURI = "failover:(tcp://localhost:61616)";
@@ -40,6 +41,5 @@ private:
 
     void startMQInterface();
     void stopMQInterface();
-    bool fromMQ(CMOOSMsg &Msg);
 };
 
