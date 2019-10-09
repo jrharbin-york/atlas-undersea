@@ -76,7 +76,7 @@ ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI
 	    session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
 	}
 	
-	destination = session->createTopic("FAULT-LINK-FROM-SIM");
+	destination = session->createTopic("FAULTS-SIM-TO-ATLAS");
 	
 	// Create a MessageProducer from the Session to the Topic or Queue
 	producer = session->createProducer(destination);
@@ -113,12 +113,20 @@ void ATLASLinkProducer::cleanup() {
 void ATLASLinkProducer::sendToMQ(CMOOSMsg & moosemsg)
 {
     TextMessage* msg = session->createTextMessage();
-    msg->setText(moosemsg.GetString());
+//    unsigned int msg_buffer_size = moosemsg.GetSizeInBytesWhenSerialised();
+
+//    std::vector<unsigned char> buffer(msg_buffer_size);
+//    if (!moosemsg.Serialize(buffer.data(), msg_buffer_size))
+//    {
+//	throw std::runtime_error("failed msg serialisation");
+//    }
+//    msg->setText(reinterpret_cast<const char*>(buffer.data()));
+    msg->setText(moosemsg.GetAsString());
     // Set some Properties
     msg->setStringProperty("USER_NAME", "MOOSIvp");
     msg->setIntProperty("USER_CODE", 42);
     producer->send(msg);
-    cout << "Message sent: " << endl;
+    cout << "Message sent: " << moosemsg.GetAsString() << endl;
     delete msg;
 }
 
@@ -142,7 +150,7 @@ ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI
     }
     
     // Create the destination (Topic or Queue)
-    destination = session->createTopic("FAULT-LINK-TO-SIM");
+    destination = session->createTopic("FAULTS-ATLAS-TO-SIM");
     // Create a MessageConsumer from the Session to the Topic or Queue
     consumer = session->createConsumer(destination);
     consumer->setMessageListener(this);
@@ -188,7 +196,9 @@ void ATLASLinkConsumer::onMessage(const Message* message)
 	if (textMessage != NULL) {
 	    text = textMessage->getText();
 	    // Check these paramters
-	    CMOOSMsg * moosemsg = new CMOOSMsg(MOOS_STRING, text, 0, 0.0);
+	    CMOOSMsg moosemsg;
+	    moosemsg << text;
+//	    CMOOSMsg * moosemsg = new CMOOSMsg(MOOS_STRING, text, 0, 0.0);
 	    db->fromMQ(*moosemsg);
 	    delete moosemsg;
 	} else {

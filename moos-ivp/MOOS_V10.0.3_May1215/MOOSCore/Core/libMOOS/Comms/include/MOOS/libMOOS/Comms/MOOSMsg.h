@@ -221,6 +221,8 @@ private:
     int  m_nSerializeBufferLen;
     int  m_nLength;
     int GetLength();
+
+public:
     void  operator << (char & cVal);
     void  operator << (double & dfVal);
     void  operator << (std::string & sVal);

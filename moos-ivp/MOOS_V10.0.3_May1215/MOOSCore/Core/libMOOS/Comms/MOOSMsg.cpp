@@ -48,7 +48,6 @@ using namespace std;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-
 CMOOSMsg::CMOOSMsg()
 {
     m_cMsgType=MOOS_NULL_MSG;
@@ -57,8 +56,8 @@ CMOOSMsg::CMOOSMsg()
     m_dfVal = -1;
     m_dfVal2 = -1;
     m_nID = -1;
-	m_sSrc = "";
-	m_sSrcAux = "";
+    m_sSrc = "";
+    m_sSrcAux = "";
 }
 
 CMOOSMsg::~CMOOSMsg()
