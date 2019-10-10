@@ -760,12 +760,12 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         switch(rVar.m_cDataType)
         {
         case MOOS_DOUBLE:
-            rVar.m_dfVal = Msg.m_dfVal;
-            break;
+	  rVar.m_dfVal = Msg.m_dfVal;
+	  break;
         case MOOS_STRING:
-		case MOOS_BINARY_STRING:
-            rVar.m_sVal = Msg.m_sVal;
-            break;
+	case MOOS_BINARY_STRING:
+	  rVar.m_sVal = Msg.m_sVal;
+	  break;
         }
         
         //record sSrc as a writer of this data
@@ -905,30 +905,30 @@ bool CMOOSDB::OnUnRegister(CMOOSMsg &Msg)
 			CMOOSMsg M;
 			Var2Msg(q->second,M);
 			if(F.Matches(M))
-			{
-				M.m_cMsgType = MOOS_UNREGISTER;
-				M.m_cDataType = MOOS_STRING;
-				M.m_sSrc = Msg.GetSource();
-				M.m_sKey = q->first;
-				OnUnRegister(M);//smart...
-			}
+			  {
+			    M.m_cMsgType = MOOS_UNREGISTER;
+			    M.m_cDataType = MOOS_STRING;
+			    M.m_sSrc = Msg.GetSource();
+			    M.m_sKey = q->first;
+			    OnUnRegister(M);//smart...
+			  }
 		}
 	}
     
-    return true;
+	return true;
 }
 
 
 /** Called when a msg containing a registration (subscription) 
-request is received */
+    request is received */
 bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 {
-    
-    //what are we looking to register for?
-	if(Msg.IsType(MOOS_REGISTER))
-	{
-
-		//if the variable already exists then post a notification message
+  
+  //what are we looking to register for?
+  if(Msg.IsType(MOOS_REGISTER))
+    {
+      
+      //if the variable already exists then post a notification message
 		//to the client
 		bool bAlreadyThere = VariableExists(Msg.m_sKey);
 

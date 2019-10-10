@@ -64,28 +64,27 @@ public:
     char   m_cDataType;
     string m_sName;
     double m_dfTime;
+    double m_dfOverrideTime = -1.0; 
     double m_dfVal;
     double m_dfWriteFreq;
     double m_dfWrittenTime;
     string m_sVal;
     string m_sWhoChangedMe;
-	string m_sSrcAux;
+    string m_sSrcAux;
     string m_sOriginatingCommunity;
 
-	struct
-	{
-	    double m_dfLastStatsTime;
-	    int     m_nLastStatsWrites;
-	} m_Stats;
-
-
-	//number of times written to
+    struct
+    {
+      double m_dfLastStatsTime;
+      int     m_nLastStatsWrites;
+    } m_Stats;
+    
+    
+    //number of times written to
     int     m_nWrittenTo;
-
-
+    
     REGISTER_INFO_MAP m_Subscribers;
     STRING_SET m_Writers;
-
 };
 
 #endif // !defined(AFX_MOOSDBVAR_H__EAAB2A16_66EF_49E4_9584_51403C59150D__INCLUDED_)
