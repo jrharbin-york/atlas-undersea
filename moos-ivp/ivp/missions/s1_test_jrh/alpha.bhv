@@ -1,0 +1,34 @@
+//--------    FILE: alpha.bhv   -------------
+
+initialize   DEPLOY = false
+initialize   RETURN = false
+
+//----------------------------------------------
+Behavior=BHV_ConstantHeading
+{
+  name       = const_heading
+  pwt        = 100
+  condition  = DEPLOY = true
+  perpetual  = true
+
+  heading = 225
+  updates = CHANGE_HEADING
+  duration = no-time-limit
+}
+
+//----------------------------------------------
+Behavior=BHV_ConstantSpeed
+{
+  name       = const_speed
+  pwt        = 100
+  condition  = DEPLOY = true
+  perpetual  = true
+  updates    = CHANGE_SPEED
+
+  speed = 2
+  duration = no-time-limit
+ }
+
+// Can change by poking with uPokeDB CHANGE_SPEED="speed=0.1"
+// Or with uPokeDB CHANGE_HEADING="heading=xxx"
+// If we add some material with 
