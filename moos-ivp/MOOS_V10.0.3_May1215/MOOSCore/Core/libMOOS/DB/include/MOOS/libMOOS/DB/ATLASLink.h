@@ -23,6 +23,7 @@
 
 #include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "MOOS/libMOOS/DB/MOOSDB_MQ.h"
+#include "MOOS/libMOOS/DB/MOOSDB_ActiveFaults.h"
 
 using namespace activemq::core;
 using namespace decaf::util::concurrent;
@@ -32,6 +33,7 @@ using namespace cms;
 using namespace std;
 
 class CMOOSDBMQ;
+class CMOOSDB_ActiveFaults;
 
 class ATLASLinkProducer {
 private:
@@ -48,6 +50,7 @@ private:
     
 public:
     ATLASLinkProducer(CMOOSDBMQ * db, const std::string& brokerURI);
+    ATLASLinkProducer(CMOOSDB_ActiveFaults * db, const std::string& brokerURI);
     ~ATLASLinkProducer();
     void sendToMQ(CMOOSMsg &Msg);
 };
@@ -62,7 +65,8 @@ private:
     bool useTopic;
     bool sessionTransacted;
 
-    CMOOSDBMQ * db;
+    CMOOSDBMQ * db_mq;
+    CMOOSDB_ActiveFaults * db_activefaults;
     
     std::string brokerURI;
 
@@ -71,5 +75,6 @@ private:
 
 public:
     ATLASLinkConsumer(CMOOSDBMQ * db, const std::string& brokerURI);
+    ATLASLinkConsumer(CMOOSDB_ActiveFaults * db, const std::string& brokerURI);
     ~ATLASLinkConsumer();
 };

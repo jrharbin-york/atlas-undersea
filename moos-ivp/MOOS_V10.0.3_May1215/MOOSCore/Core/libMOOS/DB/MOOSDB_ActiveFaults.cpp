@@ -1,11 +1,10 @@
 #include "MOOS/libMOOS/DB/MOOSDB.h"
-#include "MOOS/libMOOS/DB/MOOSDB_MQ.h"
-
-#include <activemq/library/ActiveMQCPP.h>
+#include "MOOS/libMOOS/DB/MOOSDB_ActiveFaults.h"
 
 #include <iostream>
+#include "MOOS/libMOOS/DB/ATLASLink.h"
 
-CMOOSDBMQ_ActiveFaults::CMOOSDBMQ()
+CMOOSDB_ActiveFaults::CMOOSDB_ActiveFaults()
 {
     std::cout << "Creating CMOOSDBMQ... activating ActiveMQ interface\n";
     
@@ -15,14 +14,16 @@ CMOOSDBMQ_ActiveFaults::CMOOSDBMQ()
     std::cout << "Completed" << endl;
 }
 
-
 // For activating with ActiveFaults. Variables can be
 // overriden by a fault and while the override is
 // in effect, notifications will be ignored
-bool CMOOSDBMQ_ActiveFaults::OnNotify(CMOOSMsg &Msg)
+bool CMOOSDB_ActiveFaults::OnNotify(CMOOSMsg &Msg)
 {
   double dfTimeNow = HPMOOSTime();
   CMOOSDBVar & rVar= GetOrMakeVar(Msg);
+  // If problems, check the value of this variable, in
+  // cases in which overrides are still in effect
+  bool res = false;
 
   // If we have not overriden this variable, 
   // override time will be less than the current time.
@@ -30,27 +31,37 @@ bool CMOOSDBMQ_ActiveFaults::OnNotify(CMOOSMsg &Msg)
   if (rVar.m_dfOverrideTime < dfTimeNow) {
     // In this case, handle notification normally
     // by calling the superclass method
-    CMOOSDB::OnNotify(Msg);
+    res = CMOOSDB::OnNotify(Msg);
     // Reset the override to 
     rVar.m_dfOverrideTime = -1.0;
   } else {
     // Override is still in the future
     std::cout << "Ignored msg due to override";
   }
+  return res;
 }
 
-bool CMOOSDBMQ_ActiveFaults::fromMQ(CMOOSMsg &Msg, double overrideTimeEnd) {
+bool CMOOSDB_ActiveFaults::fromMQ(CMOOSMsg &Msg) {
   // When a message notification comes in from the ActiveMQ,
   // always handle it as a standard notification
   return CMOOSDB::OnNotify(Msg);
-  // Need to set a notification on this message
-  setOverride(Msg, overrideTimeEnd);
 }
 
-void CMOOSDBMQ_ActiveFaults::startMQInterface() {
+bool CMOOSDB_ActiveFaults::fromMQ(CMOOSMsg &Msg, double overrideTimeEnd) {
+  CMOOSDBVar & rVar = GetOrMakeVar(Msg);
+  // When a message notification comes in from the ActiveMQ,
+  // always handle it as a standard notification
+  bool res = CMOOSDB::OnNotify(Msg);
+  // Need to set a notification on this message
+  rVar.m_dfOverrideTime = overrideTimeEnd;
+  // Return the original result from the notify call
+  return res;
+}
+
+void CMOOSDB_ActiveFaults::startMQInterface() {
     activemq::library::ActiveMQCPP::initializeLibrary();
 }
 
-void CMOOSDBMQ_ActiveFaults::stopMQInterface() {
+void CMOOSDB_ActiveFaults::stopMQInterface() {
     activemq::library::ActiveMQCPP::shutdownLibrary();
 }

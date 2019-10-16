@@ -24,14 +24,20 @@
 #include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "MOOS/libMOOS/DB/ATLASLink.h"
 
+class ATLASLinkProducer;
+class ATLASLinkConsumer;
+
 class CMOOSDB_ActiveFaults : public CMOOSDB
 {
 public:
     bool faultsActive = true;
-    bool ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx);
-    bool OnNotify(CMOOSMsg &Msg);
+    //bool ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx);
     CMOOSDB_ActiveFaults();
+    bool OnNotify(CMOOSMsg &Msg);
+
+    bool fromMQ(CMOOSMsg &Msg, double overrideTimeEnd);
     bool fromMQ(CMOOSMsg &Msg);
+    
     
 private:
     bool sendMsgOut = true;

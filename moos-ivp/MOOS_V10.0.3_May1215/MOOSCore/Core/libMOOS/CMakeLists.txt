@@ -80,6 +80,7 @@ SET(DB_SOURCES
     DB/MOOSDB.cpp
     DB/MOOSDB_MQ.cpp
     DB/MOOSDB_MQInterface.cpp
+    DB/MOOSDB_ActiveFaults.cpp
     DB/MOOSDBVar.cpp
     DB/MOOSRegisterInfo.cpp
     DB/MsgFilter.cpp

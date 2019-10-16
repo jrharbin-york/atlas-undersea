@@ -28,6 +28,8 @@
 
 #include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "MOOS/libMOOS/DB/MOOSDB_MQ.h"
+#include "MOOS/libMOOS/DB/MOOSDB_ActiveFaults.h"
+
 #include <iostream>
 #include <string>
 
@@ -35,15 +37,24 @@ int main(int argc , char * argv[])
 {
 
     //this is a main MOOS DB Object
-    CMOOSDBMQ DB;
-    DB.Run(argc,argv);
+    CMOOSDB * DB;
+
+    if (argc == 1) {
+	DB = new CMOOSDB();
+    } else {
+	DB = new CMOOSDB_ActiveFaults();
+    }
+    
+    DB->Run(argc,argv);
 
     //nothing to do - all the threads in the DB object
     //do the work
-    while( DB.IsRunning())
+    while(DB->IsRunning())
     {
         MOOSPause(1000);
     }
+
+    delete DB;
     return 0;
 }
 

@@ -86,6 +86,36 @@ ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI
     }
 }
 
+// FIX: factor this code out, there should really be two classes here for
+// handing the different types of interface to ActiveMQ
+ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db, const std::string& brokerURI)
+{
+    try {
+	// Create a ConnectionFactory
+	auto_ptr<ConnectionFactory> connectionFactory(
+	    ConnectionFactory::createCMSConnectionFactory(brokerURI));
+	
+	// Create a Connection
+	connection = connectionFactory->createConnection();
+	connection->start();
+	
+	// Create a Session
+	if (this->sessionTransacted) {
+	    session = connection->createSession(Session::SESSION_TRANSACTED);
+	} else {
+	    session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
+	}
+	
+	destination = session->createTopic("FAULTS-SIM-TO-ATLAS");
+	
+	// Create a MessageProducer from the Session to the Topic or Queue
+	producer = session->createProducer(destination);
+	producer->setDeliveryMode(DeliveryMode::NON_PERSISTENT);
+    } catch (CMSException& e) {
+	e.printStackTrace();
+    }
+}
+
 void ATLASLinkProducer::cleanup() {
     if (connection != NULL) {
 	try {
@@ -132,7 +162,7 @@ void ATLASLinkProducer::sendToMQ(CMOOSMsg & moosemsg)
 
 ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI)
 {
-    this->db = db;
+    this->db_mq = db;
     // Create a ConnectionFactory
     auto_ptr<ConnectionFactory> connectionFactory(
 	ConnectionFactory::createCMSConnectionFactory(brokerURI));
@@ -155,6 +185,33 @@ ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI
     consumer = session->createConsumer(destination);
     consumer->setMessageListener(this);
 }
+
+ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDB_ActiveFaults *db, const std::string& brokerURI)
+{
+    this->db_activefaults = db;
+    // Create a ConnectionFactory
+    auto_ptr<ConnectionFactory> connectionFactory(
+	ConnectionFactory::createCMSConnectionFactory(brokerURI));
+    
+    // Create a Connection
+    connection = connectionFactory->createConnection();
+    connection->start();
+    //connection->setExceptionListener(this);
+    
+    // Create a Session
+    if (this->sessionTransacted == true) {
+	session = connection->createSession(Session::SESSION_TRANSACTED);
+    } else {
+	session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
+    }
+    
+    // Create the destination (Topic or Queue)
+    destination = session->createTopic("FAULTS-ATLAS-TO-SIM");
+    // Create a MessageConsumer from the Session to the Topic or Queue
+    consumer = session->createConsumer(destination);
+    consumer->setMessageListener(this);
+}
+
 
 ATLASLinkConsumer::~ATLASLinkConsumer() {
     cleanup();
@@ -196,10 +253,12 @@ void ATLASLinkConsumer::onMessage(const Message* message)
 	if (textMessage != NULL) {
 	    text = textMessage->getText();
 	    // Check these paramters
-	    CMOOSMsg moosemsg;
-	    moosemsg << text;
-//	    CMOOSMsg * moosemsg = new CMOOSMsg(MOOS_STRING, text, 0, 0.0);
-	    db->fromMQ(*moosemsg);
+	    CMOOSMsg * moosemsg = new CMOOSMsg(MOOS_STRING, text, 0, 0.0);
+	    if (db_mq) 
+		db_mq->fromMQ(*moosemsg);
+
+	    if (db_activefaults)
+		db_activefaults->fromMQ(*moosemsg);
 	    delete moosemsg;
 	} else {
 	    // NOT A TEXTMESSAGE!;

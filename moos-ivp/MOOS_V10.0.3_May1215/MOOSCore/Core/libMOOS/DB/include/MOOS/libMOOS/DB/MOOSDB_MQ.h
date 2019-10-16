@@ -24,6 +24,9 @@
 #include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "MOOS/libMOOS/DB/ATLASLink.h"
 
+class ATLASLinkProducer;
+class ATLASLinkConsumer;
+
 class CMOOSDBMQ : public CMOOSDB
 {
 public:
