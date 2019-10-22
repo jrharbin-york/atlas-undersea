@@ -28,6 +28,7 @@
 #if !defined(MOOSCommClientH)
 #define MOOSCommClientH
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #include <iostream>
 #include <iomanip>

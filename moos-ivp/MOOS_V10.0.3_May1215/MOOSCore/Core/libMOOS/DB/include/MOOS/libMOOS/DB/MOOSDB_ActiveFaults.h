@@ -32,7 +32,7 @@ class CMOOSDB_ActiveFaults : public CMOOSDB
 public:
     bool faultsActive = true;
     //bool ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx);
-    CMOOSDB_ActiveFaults();
+    CMOOSDB_ActiveFaults(int port);
     bool OnNotify(CMOOSMsg &Msg);
 
     bool fromMQ(CMOOSMsg &Msg, double overrideTimeEnd);
@@ -41,7 +41,9 @@ public:
     
 private:
     bool sendMsgOut = true;
-    const string brokerURI = "failover:(tcp://localhost:61616)";
+    const string brokerURIBase = "failover:(tcp://localhost:";
+    int activeMQPort = 61616;  // Default
+    string brokerURI;
     ATLASLinkProducer * prod;
     ATLASLinkConsumer * cons;
 

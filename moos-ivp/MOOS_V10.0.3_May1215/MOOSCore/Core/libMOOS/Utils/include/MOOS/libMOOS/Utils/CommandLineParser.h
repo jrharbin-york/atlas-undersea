@@ -28,6 +28,9 @@
 
 #ifndef COMMANDLINEPARSER_H_
 #define COMMANDLINEPARSER_H_
+
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <memory>
 #include <vector>
 #include <string>

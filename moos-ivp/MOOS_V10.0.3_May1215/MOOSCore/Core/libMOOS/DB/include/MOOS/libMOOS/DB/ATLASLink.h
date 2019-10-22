@@ -16,6 +16,8 @@
 #include <cms/MapMessage.h>
 #include <cms/ExceptionListener.h>
 #include <cms/MessageListener.h>
+
+#include <regex>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -69,6 +71,8 @@ private:
     CMOOSDB_ActiveFaults * db_activefaults;
     
     std::string brokerURI;
+    std::regex messageRegex;
+    //("(.+)\\|(\w+)=(\w+)");
 
     void onMessage(const Message* message);
     void cleanup();

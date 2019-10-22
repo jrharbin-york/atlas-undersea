@@ -39,10 +39,18 @@ int main(int argc , char * argv[])
     //this is a main MOOS DB Object
     CMOOSDB * DB;
 
-    if (argc == 1) {
+    if (argc < 3) {
 	DB = new CMOOSDB();
     } else {
-	DB = new CMOOSDB_ActiveFaults();
+	string first_arg = argv[1];
+	string second_arg = argv[2];
+	if (first_arg == "activemq") {
+	    int port = stoi(second_arg);
+	    DB = new CMOOSDB_ActiveFaults(port);
+	}
+	else {
+	    DB = new CMOOSDB();
+	}
     }
     
     DB->Run(argc,argv);

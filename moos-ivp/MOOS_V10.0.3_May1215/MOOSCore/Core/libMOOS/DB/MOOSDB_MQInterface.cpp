@@ -38,10 +38,12 @@
 #include <cms/MapMessage.h>
 #include <cms/ExceptionListener.h>
 #include <cms/MessageListener.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 #include <memory>
+#include <regex>
 
 #include "MOOS/libMOOS/DB/MOOSDB_MQ.h"
 #include "MOOS/libMOOS/DB/ATLASLink.h"
@@ -91,6 +93,7 @@ ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI
 ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db, const std::string& brokerURI)
 {
     try {
+
 	// Create a ConnectionFactory
 	auto_ptr<ConnectionFactory> connectionFactory(
 	    ConnectionFactory::createCMSConnectionFactory(brokerURI));
@@ -243,31 +246,37 @@ void ATLASLinkConsumer::cleanup() {
 
 void ATLASLinkConsumer::onMessage(const Message* message)
 {
-    // Need to convert this back into MOOS message
-    static int count = 0;    
     try {
-	count++;
 	const TextMessage* textMessage = dynamic_cast<const TextMessage*> (message);
 	string text = "";
 	
 	if (textMessage != NULL) {
 	    text = textMessage->getText();
-	    // Check these paramters
-	    CMOOSMsg * moosemsg = new CMOOSMsg(MOOS_STRING, text, 0, 0.0);
-	    if (db_mq) 
-		db_mq->fromMQ(*moosemsg);
+	    smatch matches;
 
-	    if (db_activefaults)
-		db_activefaults->fromMQ(*moosemsg);
-	    delete moosemsg;
+	    std::regex tempRegex("(.+)\\|(\\w+)=(\\w+)");
+		
+	    // Parse the text from the message
+	    // Message format e.g. (time_double)|m=v
+	    if (std::regex_search(text, matches, tempRegex)) {
+		double endTime = stod(matches[1]);
+		string key = matches[2];
+		string val = matches[3];
+		CMOOSMsg * moosemsg = new CMOOSMsg(MOOS_STRING, key, val);
+		if (db_activefaults)
+		    db_activefaults->fromMQ(*moosemsg, endTime);
+		delete moosemsg;
+	    } else {
+		cout << "No match" << endl;
+	    }
 	} else {
-	    // NOT A TEXTMESSAGE!;
+	    cout << "Not a text message" << endl;
 	}
-	
-	printf("Message #%d Received: %s\n", count, text.c_str());
-	
+		
     } catch (CMSException& e) {
 	e.printStackTrace();
+    } catch (invalid_argument &ia) {
+	cout << "Exception: invalid time" << endl;
     }
     
     // Commit all messages.
