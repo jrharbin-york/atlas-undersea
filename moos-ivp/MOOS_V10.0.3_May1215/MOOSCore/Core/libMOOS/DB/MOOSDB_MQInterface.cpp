@@ -254,7 +254,7 @@ void ATLASLinkConsumer::onMessage(const Message* message)
 	    text = textMessage->getText();
 	    smatch matches;
 
-	    std::regex tempRegex("(.+)\\|(\\w+)=(\\w+)");
+	    std::regex tempRegex("(.+)\\|(\\w+)=(.+)");
 		
 	    // Parse the text from the message
 	    // Message format e.g. (time_double)|m=v
