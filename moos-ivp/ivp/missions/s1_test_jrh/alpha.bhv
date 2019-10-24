@@ -11,7 +11,7 @@ Behavior=BHV_ConstantHeading
   condition  = DEPLOY = true
   perpetual  = true
 
-  heading = 225
+  heading = 70
   updates = CHANGE_HEADING
   duration = no-time-limit
 }
@@ -25,7 +25,7 @@ Behavior=BHV_ConstantSpeed
   perpetual  = true
   updates    = CHANGE_SPEED
 
-  speed = 2
+  speed = 0.2
   duration = no-time-limit
  }
 
