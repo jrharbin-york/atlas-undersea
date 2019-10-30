@@ -8,22 +8,22 @@
 
 using namespace std;
 
-CMOOSDB_ActiveFaults::CMOOSDB_ActiveFaults(int port)
+CMOOSDB_ActiveFaults::CMOOSDB_ActiveFaults(int port, string mission_file)
 {
     activeMQPort = port;
 
     ostringstream ss;
     ss << brokerURIBase << to_string(port) << ")";
     
-    brokerURI = ss.str();
+    broker_uri = ss.str();
     cout << "Creating CMOOSDB_ActiveFaults... activating ActiveMQ interface on "
 	 << port << endl;
-    cout << "Connecting to " << brokerURI << endl;
+    cout << "Connecting to " << broker_uri << endl;
     
     startMQInterface();
-    prod = new ATLASLinkProducer(this, brokerURI);
-    cons = new ATLASLinkConsumer(this, brokerURI);
-    cout << "Completed" << endl;
+    prod = new ATLASLinkProducer(this, broker_uri, mission_file);
+    cons = new ATLASLinkConsumer(this, broker_uri, mission_file);
+    cout << "ActiveMQ connection completed!" << endl;
 }
 
 // For activating with ActiveFaults. Variables can be

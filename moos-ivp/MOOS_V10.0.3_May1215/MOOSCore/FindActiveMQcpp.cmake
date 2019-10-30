@@ -16,7 +16,6 @@
 #=============================================================================
 # By Fabrizio Furano (CERN IT/GT), Oct 2010
 
-
 IF (ACTIVEMQCPP_INCLUDE_DIR AND ACTIVEMQCPP_LIBRARIES)
   # in cache already
   SET(ACTIVEMQCPP_FIND_QUIETLY TRUE)

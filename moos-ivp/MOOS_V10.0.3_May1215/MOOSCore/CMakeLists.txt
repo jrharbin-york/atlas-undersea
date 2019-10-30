@@ -48,6 +48,41 @@ set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
 # of build environment
 include(SystemDefines)
 
+# JRH: build for ActiveMQ and APR lib
+#find_path(APR_INCLUDE_DIR
+#  NAMES "apr_lib.h"
+#  HINTS
+#  "/usr/include/apr-1"
+#  "/home/userfs/j/jrh512/source/apr-install/include/apr-1"
+#  DOC "APR include files")
+#
+#find_library(ActiveMQ_LIBRARY
+#  NAMES activemq-cpp
+#  HINTS
+#  /home/userfs/j/jrh512/source/activemq-cpp-install/lib
+#  DOC "ActiveMQ library")
+#
+#find_path(ActiveMQ_INCLUDE_DIR
+#  NAMES "ActiveMQCPP.h"
+#  HINTS
+#  "/home/userfs/j/jrh512/source/activemq-cpp-install/include/activemq-cpp-3.9.5/"
+#  "/usr/local/include/activemq-cpp-3.9.5/"
+#  PATH_SUFFIXES "activemq/library/"
+#  DOC "ActiveMQ include files")
+#
+#find_library(ActiveMQ_LIBRARY
+#  NAMES activemq-cpp
+#  HINTS
+#  /home/userfs/j/jrh512/source/activemq-cpp-install/lib
+#  DOC "ActiveMQ library")
+
+include_directories(${APR_INCLUDE_DIR} ${ActiveMQ_INCLUDE_DIR})
+include_directories("/home/userfs/j/jrh512/source/activemq-cpp-install/include/activemq-cpp-3.9.5/")
+
+set(CMAKE_CXX_STANDARD 11)
+
+target_link_libraries(${ActiveMQ_LIBRARY})
+
 
 # Turn on all compiler warnings
 include(EnableAllWarnings)

@@ -60,7 +60,9 @@ ATLASLinkProducer::~ATLASLinkProducer()
     cleanup();
 }
 
-ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI)
+// DELETE this constructor since we are only using CMOOSDB_ActiveFaults
+ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI,
+				     const std::string& atlas_link_extraname)
 {
     try {
 	// Create a ConnectionFactory
@@ -88,9 +90,9 @@ ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI
     }
 }
 
-// FIX: factor this code out, there should really be two classes here for
-// handing the different types of interface to ActiveMQ
-ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db, const std::string& brokerURI)
+ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db,
+				     const std::string& brokerURI,
+				     const std::string& atlas_link_extraname)
 {
     try {
 
@@ -108,8 +110,14 @@ ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db, const std::string
 	} else {
 	    session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
 	}
-	
-	destination = session->createTopic("FAULTS-SIM-TO-ATLAS");
+
+	// Determine the topic name
+	ostringstream topicname;
+	topicname << "FAULTS-SIM-TO-ATLAS";
+	if (!atlas_link_extraname.empty())
+	  topicname << "-" << atlas_link_extraname;
+
+	destination = session->createTopic(topicname.str());
 	
 	// Create a MessageProducer from the Session to the Topic or Queue
 	producer = session->createProducer(destination);
@@ -163,7 +171,8 @@ void ATLASLinkProducer::sendToMQ(CMOOSMsg & moosemsg)
     delete msg;
 }
 
-ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI)
+ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI,
+				     const std::string& atlas_link_extraname)
 {
     this->db_mq = db;
     // Create a ConnectionFactory
@@ -189,7 +198,9 @@ ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI
     consumer->setMessageListener(this);
 }
 
-ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDB_ActiveFaults *db, const std::string& brokerURI)
+ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDB_ActiveFaults *db,
+				     const std::string& brokerURI,
+				     const std::string& atlas_link_extraname)
 {
     this->db_activefaults = db;
     // Create a ConnectionFactory
@@ -207,9 +218,15 @@ ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDB_ActiveFaults *db, const std::string
     } else {
 	session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
     }
+
+    // Determine the topic name
+    ostringstream topicname;
+    topicname << "FAULTS-SIM-TO-ATLAS";
+    if (!atlas_link_extraname.empty())
+      topicname << "-" << atlas_link_extraname;
     
     // Create the destination (Topic or Queue)
-    destination = session->createTopic("FAULTS-ATLAS-TO-SIM");
+    destination = session->createTopic(topicname.str());
     // Create a MessageConsumer from the Session to the Topic or Queue
     consumer = session->createConsumer(destination);
     consumer->setMessageListener(this);
