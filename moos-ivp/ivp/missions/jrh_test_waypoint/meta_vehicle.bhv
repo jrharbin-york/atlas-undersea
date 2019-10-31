@@ -1,7 +1,7 @@
 //---------------------------------------------------
 // Helm Behavior file 
 
-initialize   DEPLOY  = true
+initialize   DEPLOY  = false
 initialize   RETURN  = false
 initialize   STATION_KEEP = false
 initialize   LOITER  = true
@@ -44,8 +44,8 @@ Behavior = BHV_Loiter
      nm_radius = 15.0
        polygon = radial:: $(LOITER_POS), radius=20, pts=8, snap=1, label=$(VNAME)_LOITER
   visual_hints = nextpt_color=white, nextpt_lcolor=khaki
-  visual_hints = edge_color=white, vertex_color=green
-  visual_hints = edge_size=1, vertex_size=1
+  visual_hints = edge_color=orange, vertex_color=white
+  visual_hints = edge_size=1, vertex_size=2
 }
 
 
@@ -88,7 +88,7 @@ Behavior = BHV_StationKeep
 //----------------------------------------------
 Behavior = BHV_AvoidCollision
 {
-  name       = avd_collision
+  name       = avdcollision_
   pwt        = 200
   condition  = AVOID=true
   updates    = CONTACT_INFO

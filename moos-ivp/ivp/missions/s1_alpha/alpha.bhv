@@ -19,8 +19,8 @@ Behavior = BHV_Waypoint
 
   updates     = WPT_UPDATE
   perpetual   = true
-   templating = clone
-                lead = 8
+  templating = clone
+  	     lead = 8
          lead_damper = 1
        lead_to_start = true
                speed = 2   // meters per second

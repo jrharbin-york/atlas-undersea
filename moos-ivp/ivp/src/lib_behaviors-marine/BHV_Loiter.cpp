@@ -94,31 +94,31 @@ bool BHV_Loiter::setParam(string param, string value)
 {
   if(param == "polygon") {
     XYPolygon new_poly = string2Poly(value);
-    if(!new_poly.is_convex())  // Should be convex - false otherwise
-      return(false);
+//    if(!new_poly.is_convex())  // Should be convex - false otherwise
+//      return(false);
     new_poly.apply_snap(0.1); // snap to tenth of meter
     m_loiter_engine.setPoly(new_poly);
     m_loiter_engine.setClockwise(m_clockwise);
     m_waypoint_engine.setSegList(m_loiter_engine.getPolygon());
     m_acquire_mode  = true;
     return(true);
-  }  
+  }
   else if(param == "center_assign") {
     m_center_assign  = value;
     m_center_pending = true;
     updateCenter(); // Added by mikerb 08/29/12 to ensure updates are immediate
     return(true);
-  }  
+  }
   else if(param == "xcenter_assign") {
     m_center_assign  += (",x=" + value);
     m_center_pending = true;
     return(true);
-  }  
+  }
   else if(param == "ycenter_assign") {
     m_center_assign  += (",y=" + value);
     m_center_pending = true;
     return(true);
-  }  
+  }
   else if(param == "center_activate") {
     value = tolower(value);
     if((value!="true")&&(value!="false"))
