@@ -51,9 +51,6 @@ private:
     void cleanup();
     
 public:
-    ATLASLinkProducer(CMOOSDBMQ * db,
-		      const std::string& brokerURI,
-		      const std::string& atlas_link_extraname);
     ATLASLinkProducer(CMOOSDB_ActiveFaults * db,
 		      const std::string& brokerURI,
 		      const std::string& atlas_link_extraname);  
@@ -82,9 +79,6 @@ private:
     void cleanup();
 
 public:
-    ATLASLinkConsumer(CMOOSDBMQ * db,
-		      const std::string& brokerURI,
-		      const std::string& atlas_link_extraname);
     ATLASLinkConsumer(CMOOSDB_ActiveFaults * db,
 		      const std::string& brokerURI,
 		      const std::string& atlas_link_extraname);

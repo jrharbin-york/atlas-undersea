@@ -20,6 +20,3 @@ ProcessConfig = uTimerScript
   EVENT = var=NODE_MESSAGE_LOCAL, val="src_node=$(VNAME),dest_node=all,var_name=FOOBAR,string_val=$[X],$[Y]", time=60:90 
 }
 
-
- 
-

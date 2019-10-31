@@ -60,36 +60,6 @@ ATLASLinkProducer::~ATLASLinkProducer()
     cleanup();
 }
 
-// DELETE this constructor since we are only using CMOOSDB_ActiveFaults
-ATLASLinkProducer::ATLASLinkProducer(CMOOSDBMQ *db, const std::string& brokerURI,
-				     const std::string& atlas_link_extraname)
-{
-    try {
-	// Create a ConnectionFactory
-	auto_ptr<ConnectionFactory> connectionFactory(
-	    ConnectionFactory::createCMSConnectionFactory(brokerURI));
-	
-	// Create a Connection
-	connection = connectionFactory->createConnection();
-	connection->start();
-	
-	// Create a Session
-	if (this->sessionTransacted) {
-	    session = connection->createSession(Session::SESSION_TRANSACTED);
-	} else {
-	    session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
-	}
-	
-	destination = session->createTopic("FAULTS-SIM-TO-ATLAS");
-	
-	// Create a MessageProducer from the Session to the Topic or Queue
-	producer = session->createProducer(destination);
-	producer->setDeliveryMode(DeliveryMode::NON_PERSISTENT);
-    } catch (CMSException& e) {
-	e.printStackTrace();
-    }
-}
-
 ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db,
 				     const std::string& brokerURI,
 				     const std::string& atlas_link_extraname)
@@ -169,33 +139,6 @@ void ATLASLinkProducer::sendToMQ(CMOOSMsg & moosemsg)
     producer->send(msg);
     cout << "Message sent: " << moosemsg.GetAsString() << endl;
     delete msg;
-}
-
-ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDBMQ *db, const std::string& brokerURI,
-				     const std::string& atlas_link_extraname)
-{
-    this->db_mq = db;
-    // Create a ConnectionFactory
-    auto_ptr<ConnectionFactory> connectionFactory(
-	ConnectionFactory::createCMSConnectionFactory(brokerURI));
-    
-    // Create a Connection
-    connection = connectionFactory->createConnection();
-    connection->start();
-    //connection->setExceptionListener(this);
-    
-    // Create a Session
-    if (this->sessionTransacted == true) {
-	session = connection->createSession(Session::SESSION_TRANSACTED);
-    } else {
-	session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
-    }
-    
-    // Create the destination (Topic or Queue)
-    destination = session->createTopic("FAULTS-ATLAS-TO-SIM");
-    // Create a MessageConsumer from the Session to the Topic or Queue
-    consumer = session->createConsumer(destination);
-    consumer->setMessageListener(this);
 }
 
 ATLASLinkConsumer::ATLASLinkConsumer(CMOOSDB_ActiveFaults *db,
