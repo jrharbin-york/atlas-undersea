@@ -58,12 +58,19 @@
   "Subdivides the given search zone horizontally and vertically amongst the 
   vehicles given. Returns a list of the new search zones"
   (let* ((count (length vehicles))
-	 (hcount (/ count 2))
-	 (vcount 2)
-	 (subwidth (/ (search-zone-width full-search-zone) hcount))
-	 (subheight (/ (search-zone-height full-search-zone)) vcount))
-    
-    ))
+         (hcount (/ count 2))
+         (vcount 2)
+         (x (search-zone-left full-search-zone))
+         (y (search-zone-bottom full-search-zone))
+         (subwidth (/ (search-zone-width full-search-zone) hcount))
+         (subheight (/ (search-zone-height full-search-zone) vcount)))
+    (loop for i :upto (1- count)
+          for v being the elements of vehicles
+          :collect (cons v (make-search-zone :left (+ x (* (mod i hcount) subwidth))
+                                     :bottom (+ y (* (floor i vcount) subheight))
+                                     :width subwidth
+                                     :height subheight)
+                                     ))))
 
 (defun compute-polygon-path (sz &key (step 10.0))
 "Returns a polygon path to sweep the given search zone, 
@@ -119,13 +126,31 @@ in a horizontal/vertical pattern"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defparameter pl-ella (compute-polygon-path
-		       (make-search-zone :left 0d0
-					 :bottom -100d0
-					 :width 100d0
-					 :height 100d0)
-		       :step 5.0))
+                       (make-search-zone :left 0d0
+                                         :bottom -100d0
+                                         :width 100d0
+                                         :height 100d0)
+                       :step 5.0))
+
+(defparameter *whole-region* (make-search-zone :left -50d0
+                                               :bottom -150d0
+                                               :width 230d0
+                                               :height 150d0))
+
+(defparameter *all-vehicles* '("ella" "frank" "gilda" "henry"))
 
 (defun send-test-ella ()
   (set-speed :uuv-name "ella" :speed 0.5)
   (set-polygon :uuv-name "ella" :polygon pl-ella))
+
+(defun send-multiple-vehicles ()
+  (let ((subzones (subdivide-search-zone *whole-region*
+                                         :vehicles
+                                         *all-vehicles*)))
+    (mapcar (lambda (v-zone)
+              (set-speed :uuv-name (car v-zone) :speed 2.0)
+              (set-polygon :uuv-name (car v-zone)
+                           :polygon (compute-polygon-path (cdr v-zone) :step 5.)))
+              subzones)))
