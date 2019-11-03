@@ -21,10 +21,11 @@ Processconfig = ANTLER
   Run = uXMS            @ NewConsole = false
   Run = uProcessWatch   @ NewConsole = false
 
-  Run = pShare          @ NewConsole = false
-  Run = pHostInfo       @ NewConsole = false
-  Run = uFldShoreBroker @ NewConsole = false
-  Run = uFldNodeComms   @ NewConsole = false
+  Run = uFldHazardSensor @ NewConsole = false
+  Run = pShare           @ NewConsole = false
+  Run = pHostInfo        @ NewConsole = false
+  Run = uFldShoreBroker  @ NewConsole = false
+  Run = uFldNodeComms    @ NewConsole = false
 }
 
 #include plug_pShare.moos
@@ -86,6 +87,11 @@ ProcessConfig = uFldShoreBroker
   BRIDGE   = src=UP_LOITER_$N, alias=UP_LOITER
   BRIDGE   = src=DRIFT_VECTOR_ADD, alias=DRIFT_VECTOR_ADD
   BRIDGE   = src=HELM_MAP_CLEAR, alias=HELM_MAP_CLEAR
+
+  bridge =  src=APPCAST_REQ
+  bridge =  src=UHZ_CONFIG_ACK_$V,       alias=UHZ_CONFIG_ACK
+  bridge =  src=UHZ_DETECTION_REPORT_$V, alias=UHZ_DETECTION_REPORT
+  bridge =  src=HAZARDSET_REQUEST_$V,    alias=HAZARDSET_REQUEST
 }
 
 //--------------------------------------------------
@@ -259,6 +265,12 @@ ProcessConfig = uProcessWatch
   NOWATCH = uPokeDB*
 
   SUMMARY_WAIT = 12
-}
+} 
 
-
+ProcessConfig = uFldHazardSensor                                
+{                                                               
+ hazard_file   = hazards.txt                                   
+ sensor_config = width=25, exp=4, pclass=0.80  
+ sensor_config = width=50, exp=2, pclass=0.60  
+ sensor_config = width=10, exp=6, pclass=0.93  
+}   

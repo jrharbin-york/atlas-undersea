@@ -23,6 +23,7 @@ Processconfig = ANTLER
   Run = pBasicContactMgr @ NewConsole = false
   Run = pHostInfo        @ NewConsole = false
   Run = uFldNodeBroker   @ NewConsole = false
+  Run = uFldHazardMgr    @ NewConsole = false
 
 #ifdef VARIATION 1
   Run = uXMS             @ NewConsole = false ~ uXMS_GPS
@@ -39,6 +40,7 @@ Processconfig = ANTLER
 }
 
 #include plug_uFldNodeBroker.moos
+#include plug_uFldHazardMgr.moos
 #include plug_pShare.moos
 #include plug_pHostInfo.moos
 #include plug_uSimMarine.moos

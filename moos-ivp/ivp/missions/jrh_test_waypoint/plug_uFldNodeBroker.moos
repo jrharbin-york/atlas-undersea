@@ -14,4 +14,11 @@ ProcessConfig = uFldNodeBroker
   BRIDGE = src=APPCAST
   BRIDGE = src=NODE_REPORT_LOCAL,  alias=NODE_REPORT
   BRIDGE = src=NODE_MESSAGE_LOCAL, alias=NODE_MESSAGE
+
+// Bridges from Vehicle to Shoreside - in uFldNodeBroker configuration
+   bridge =  src=UHZ_SENSOR_CONFIG
+   bridge =  src=UHZ_CONFIG_REQUEST
+   bridge =  src=UHZ_SENSOR_REQUEST
+   bridge =  src=HAZARDSET_REPORT
 }
+
