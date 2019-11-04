@@ -1,6 +1,5 @@
 (defpackage :atlas-faults
-  (:use :cl
-	:cl-user))
+  (:use :cl :cl-user))
 
 (in-package :atlas-faults)
 
@@ -16,6 +15,7 @@
 (defparameter *inbound* "/topic/FAULTS-ATLASLINKAPP-targ_shoreside.moos")
 (defparameter *outbound* "/topic/FAULTS-SIM-TO-ATLAS")
 (defparameter *inbound-message-hooks* (list))
+(defparameter *label-to-find* 2)
 
 (defparameter *fault* nil)
 
@@ -28,7 +28,12 @@
 (defun handle-inbound (frame)
   (incf *counter*)
   (unless *fault*
-    (let* ((incoming-msg (stomp:frame-body frame)))
+    (let* ((incoming-msg (stomp:frame-body frame))
+           (key (get-key incoming-msg)))
+      (mapcar (lambda (key-and-hook)
+                (when (string-equal (car key-and-hook) key)
+                      (funcall (cdr key-and-hook) incoming-msg *counter*)))
+              *inbound-message-hooks*)
       (format t "MSG: ~A:~A~%" *counter* incoming-msg))))
 
 (defun setup ()
@@ -153,15 +158,41 @@ in a horizontal/vertical pattern"
     (mapcar (lambda (v-zone)
               (set-speed :uuv-name (car v-zone) :speed 2.0)
               (set-polygon :uuv-name (car v-zone)
-                           :polygon (compute-polygon-path (cdr v-zone) :step 5.))
+                           :polygon (compute-polygon-path (cdr v-zone) :step 5.0))
               v-zone)
             subzones)))
 
+(defun dispatch-closest-vehicle-on-detection (msgtext count)
+  "Handles a detection message"
+  ;; Need to track the coordinates of the vehicles from MOOS messages
+  ;; Check the field label
+  ;; If there is a match, find the closest vehicles
+  ;; dispatch it in a polygon trajectory around the target!
+  ;; This only has to be done once per the detection???
+  nil)
+
+(defun register-hook (&key key func)
+  (push (cons key #'func) *inbound-message-hooks*))
+
+(defun clear-hooks ()
+  (setf *inbound-message-hooks* nil))
+
+(defun setup-hooks-for-ci ()
+  (clear-hooks)
+  (register-hook :key "UHZ_DETECTION_REPORT"
+                 :func dispatch-closest-vehicle-on-detection)
+  ;; FIX: set up the coords here
+  (register-hook :key "<coords>"
+                 :func update-vehicle-position))
+
 (defun start-collective-intelligence ()
-  (format t "SHORESIDE COLLECTIVE INTELLIGENCE")
+  (format t "SHORESIDE COLLECTIVE INTELLIGENCE~%")
+  (setup-hooks-for-ci)
   (format t "Starting an ActiveMQ connection...~%")
   (start)
+  (format t "Vehicles are ~A" *all-vehicles*)
   (sleep 5)
-  (format t "Partitioning the grid region... sending out the vehicles to 4 zones~%")
+  (format t "Partitioning the grid region... sending out the vehicles to ~A zones~%"
+          (length *vehicles*))
   (send-multiple-vehicles)
   (format t "Sensor detections will be logged below..."))
