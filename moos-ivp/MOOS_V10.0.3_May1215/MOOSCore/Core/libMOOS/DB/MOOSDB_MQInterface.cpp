@@ -83,7 +83,7 @@ ATLASLinkProducer::ATLASLinkProducer(CMOOSDB_ActiveFaults *db,
 
 	// Determine the topic name
 	ostringstream topicname;
-	topicname << "FAULTS-SIM-TO-ATLAS";
+	topicname << "FAULTS-ATLAS-LISTEN";
 	if (!atlas_link_extraname.empty())
 	  topicname << "-" << atlas_link_extraname;
 

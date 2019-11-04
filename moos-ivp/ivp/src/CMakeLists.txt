@@ -227,6 +227,7 @@ SET(IVP_NON_GUI_APPS
   app_gen_hazards
   app_bhv2graphviz
   pXRelay
+  atlasDBWatch
   uFldCollisionDetect
   uFldPathCheck
   uFldShoreBroker

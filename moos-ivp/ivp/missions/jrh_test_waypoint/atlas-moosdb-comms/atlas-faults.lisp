@@ -13,7 +13,7 @@
 (defvar *stomp* nil)
 (defvar *thread* nil)
 (defparameter *counter* 0)
-(defparameter *inbound* "/topic/FAULTS-ATLAS-TO-SIM")
+(defparameter *inbound* "/topic/FAULTS-ATLASLINKAPP-targ_shoreside.moos")
 (defparameter *outbound* "/topic/FAULTS-SIM-TO-ATLAS")
 
 (defparameter *fault* nil)
@@ -27,8 +27,8 @@
 (defun handle-inbound (frame)
   (incf *counter*)
   (unless *fault*
-    (let* ((outbound-msg (stomp:frame-body frame)))
-      (format t "MSG: ~A:~A~%" *counter* outbound-msg))))
+    (let* ((incoming-msg (stomp:frame-body frame)))
+      (format t "MSG: ~A:~A~%" *counter* incoming-msg))))
 
 (defun setup ()
   (setf *stomp* (stomp:make-connection "localhost" 61613))
@@ -55,7 +55,7 @@
 ;;--------------------------------------------------------------------------------
 
 (defun subdivide-search-zone (full-search-zone &key vehicles)
-  "Subdivides the given search zone horizontally and vertically amongst the 
+  "Subdivides the given search zone horizontally and vertically amongst the
   vehicles given. Returns a list of the new search zones"
   (let* ((count (length vehicles))
          (hcount (/ count 2))
@@ -73,7 +73,7 @@
                                      ))))
 
 (defun compute-polygon-path (sz &key (step 10.0))
-"Returns a polygon path to sweep the given search zone, 
+"Returns a polygon path to sweep the given search zone,
 in a horizontal/vertical pattern"
   (let* ((l (search-zone-left sz))
          (r (+ l (search-zone-width sz)))
@@ -141,9 +141,12 @@ in a horizontal/vertical pattern"
 
 (defparameter *all-vehicles* '("ella" "frank" "gilda" "henry"))
 
+
 (defun send-test-ella ()
   (set-speed :uuv-name "ella" :speed 0.5)
   (set-polygon :uuv-name "ella" :polygon pl-ella))
+
+;; Need to read UHZ_DETECTION_REPORT from the shoreside
 
 (defun send-multiple-vehicles ()
   (let ((subzones (subdivide-search-zone *whole-region*

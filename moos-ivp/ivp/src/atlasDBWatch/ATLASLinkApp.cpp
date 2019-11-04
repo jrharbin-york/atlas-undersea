@@ -53,7 +53,7 @@ ATLASLinkProducer::ATLASLinkProducer(const std::string &brokerURI,
 
     // Determine the topic name
     ostringstream topicname;
-    topicname << "FAULTS-ATLAS-LISTEN";
+    topicname << "FAULTS-ATLASLINKAPP";
     if (!atlas_link_extraname.empty())
       topicname << "-" << atlas_link_extraname;
 
@@ -89,14 +89,19 @@ void ATLASLinkProducer::cleanup() {
   } catch (CMSException &e) {
     e.printStackTrace();
   }
-};
+}
 
 void ATLASLinkProducer::sendToMQString(const string &textmsg) {
-  TextMessage *msg = session->createTextMessage();
-  msg->setText(textmsg);
-  msg->setStringProperty("USER_NAME", "MOOSIvp");
-  msg->setIntProperty("USER_CODE", 42);
-  producer->send(msg);
-  cout << "Message sent: " << textmsg << endl;
-  delete msg;
+        if (session != nullptr) {
+                cout << "Creating text message for: " << textmsg << endl;
+                TextMessage *msg = session->createTextMessage(textmsg);
+                cout << "Setting properties..." << endl;
+                msg->setStringProperty("USER_NAME", "MOOSIvp");
+                msg->setIntProperty("USER_CODE", 42);
+                producer->send(msg);
+                cout << "Message sent: " << textmsg << endl;
+                delete msg;
+        } else {
+                cout << "session is null!" << endl;
+        }
 }

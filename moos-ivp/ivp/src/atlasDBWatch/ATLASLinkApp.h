@@ -48,6 +48,5 @@ public:
                       const std::string& atlas_link_extraname);
     ~ATLASLinkProducer();
 
-private:
     void sendToMQString(const string &textmsg);
 };

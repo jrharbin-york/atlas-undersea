@@ -37,16 +37,21 @@ public:
 
     bool fromMQ(CMOOSMsg &Msg, double overrideTimeEnd);
     bool fromMQ(CMOOSMsg &Msg);
-    
-    
+
+
 private:
     bool sendMsgOut = true;
+
+    ofstream debug_output;
     const string brokerURIBase = "failover:(tcp://localhost:";
     int activeMQPort = 61616;  // Default
     string broker_uri;
+    string mission_file;
+
     ATLASLinkProducer * prod;
     ATLASLinkConsumer * cons;
 
+    void checkWatchedNames(CMOOSMsg &Msg, CMOOSDBVar &rVar);
     void startMQInterface();
     void stopMQInterface();
 };

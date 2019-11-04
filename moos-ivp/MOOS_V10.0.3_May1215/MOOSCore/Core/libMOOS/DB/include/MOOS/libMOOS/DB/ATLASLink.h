@@ -49,11 +49,11 @@ private:
     std::string brokerURI;
 
     void cleanup();
-    
+
 public:
     ATLASLinkProducer(CMOOSDB_ActiveFaults * db,
 		      const std::string& brokerURI,
-		      const std::string& atlas_link_extraname);  
+		      const std::string& atlas_link_extraname);
     ~ATLASLinkProducer();
     void sendToMQ(CMOOSMsg &Msg);
 };
@@ -70,11 +70,13 @@ private:
 
     CMOOSDBMQ * db_mq;
     CMOOSDB_ActiveFaults * db_activefaults;
-    
+
     std::string brokerURI;
     std::regex messageRegex;
     //("(.+)\\|(\w+)=(\w+)");
-
+    // FIX: set this regex here rather than in the
+    // ATLAS link code
+    
     void onMessage(const Message* message);
     void cleanup();
 

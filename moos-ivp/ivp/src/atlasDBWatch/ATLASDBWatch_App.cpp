@@ -25,8 +25,8 @@
 using namespace std;
 
 ATLASDBWatch::ATLASDBWatch() {
-    // FIX: hardcoded values in here for the connection to ActiveMQ
-    ATLASLinkProducer *prod = new ATLASLinkProducer("failover:(tcp://localhost:61616", "targ_shoreside.moos");
+    activemq::library::ActiveMQCPP::initializeLibrary();
+    prod = new ATLASLinkProducer("failover:(tcp://localhost:61616)", "targ_shoreside.moos");
     m_tally_recd = 0;
     m_tally_sent = 0;
     m_iterations = 0;
@@ -43,10 +43,13 @@ bool ATLASDBWatch::OnNewMail(MOOSMSG_LIST &NewMail) {
     CMOOSMsg &msg = *p;
     string key = msg.GetKey();
 
-    if (key == m_incoming_var)
-      m_tally_recd++;
+    if (key == "UHZ_DETECTION_REPORT") {
+            cout << "UHZ_DETECTION_REPORT seen" << endl;
+            std::string stest {"UHZ_DET_TEST"};
+            prod->sendToMQString(stest);
+    }
   }
-  return (true);
+  return true;
 }
 
 //---------------------------------------------------------
@@ -114,5 +117,6 @@ bool ATLASDBWatch::OnStartUp() {
   m_MissionReader.GetConfiguration(GetAppName(), sParams);
 
   RegisterVariables();
-  return (true);
+  cout << "RegisterVariables() done" << endl;
+  return true;
 }
