@@ -29,30 +29,12 @@ CMOOSDB_ActiveFaults::CMOOSDB_ActiveFaults(int port, string mission_file) {
     cout << "ActiveMQ connection completed!" << endl;
 }
 
-void CMOOSDB_ActiveFaults::checkWatchedNames(CMOOSMsg &Msg, CMOOSDBVar &rVar) {
-    // FIX: for now the detection reports are
-    // hardcoded in here
-
-    exit(0);
-    if (rVar.m_sName == "UHZ_DETECTION_REPORT") {
-        prod->sendToMQ(Msg);
-        exit(0);
-    }
-}
-
 // For activating with ActiveFaults. Variables can be
 // overriden by a fault and while the override is
 // in effect, notifications will be ignored
 bool CMOOSDB_ActiveFaults::OnNotify(CMOOSMsg &Msg) {
   double dfTimeNow = HPMOOSTime();
   CMOOSDBVar &rVar = GetOrMakeVar(Msg);
-
-  debug_output << "notify called" << endl;
-  
-  // FIX: for now, this is hardcoded to only work
-  // on the shoreside DB
-  if (this->mission_file == "targ_shoreside.moos")
-      checkWatchedNames(Msg, rVar);
 
   // If problems, check the value of this variable, in
   // cases in which overrides are still in effect

@@ -20,6 +20,7 @@ Processconfig = ANTLER
   Run = pSearchGrid     @ NewConsole = false
   Run = uXMS            @ NewConsole = false
   Run = uProcessWatch   @ NewConsole = false
+  Run = ATLASDBWatch    @ NewConsole = false
 
   Run = uFldHazardSensor @ NewConsole = false
   Run = pShare           @ NewConsole = false

@@ -16,6 +16,7 @@
 #include <decaf/lang/Thread.h>
 #include <decaf/util/concurrent/CountDownLatch.h>
 
+#include "MOOS/libMOOS/MOOSLib.h"
 #include "ATLASDBWatch_App.h"
 #include "ATLASLinkApp.h"
 
@@ -26,6 +27,7 @@ using namespace std;
 
 ATLASDBWatch::ATLASDBWatch() {
     activemq::library::ActiveMQCPP::initializeLibrary();
+    // FIX: hardcoded path
     prod = new ATLASLinkProducer("failover:(tcp://localhost:61616)", "targ_shoreside.moos");
     m_tally_recd = 0;
     m_tally_sent = 0;
@@ -43,10 +45,10 @@ bool ATLASDBWatch::OnNewMail(MOOSMSG_LIST &NewMail) {
     CMOOSMsg &msg = *p;
     string key = msg.GetKey();
 
+    // FIX: hardcoded variable names
     if (key == "UHZ_DETECTION_REPORT") {
             cout << "UHZ_DETECTION_REPORT seen" << endl;
-            std::string stest {"UHZ_DET_TEST"};
-            prod->sendToMQString(stest);
+            prod->sendToMQ(msg);
     }
   }
   return true;

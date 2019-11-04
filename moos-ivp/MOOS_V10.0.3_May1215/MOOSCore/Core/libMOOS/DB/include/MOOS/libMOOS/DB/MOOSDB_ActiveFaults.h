@@ -51,7 +51,6 @@ private:
     ATLASLinkProducer * prod;
     ATLASLinkConsumer * cons;
 
-    void checkWatchedNames(CMOOSMsg &Msg, CMOOSDBVar &rVar);
     void startMQInterface();
     void stopMQInterface();
 };

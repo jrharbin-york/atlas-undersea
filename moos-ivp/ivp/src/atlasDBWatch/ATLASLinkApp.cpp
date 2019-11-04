@@ -22,6 +22,8 @@
 #include <stdlib.h>
 
 #include "ATLASLinkApp.h"
+#include "MBUtils.h"
+#include "MOOS/libMOOS/MOOSLib.h"
 
 using namespace activemq::core;
 using namespace decaf::util::concurrent;
@@ -30,12 +32,10 @@ using namespace decaf::lang;
 using namespace cms;
 using namespace std;
 
-ATLASLinkProducer::~ATLASLinkProducer() { cleanup(); }
-
 ATLASLinkProducer::ATLASLinkProducer(const std::string &brokerURI,
                                      const std::string &atlas_link_extraname) {
   try {
-
+    debugLog.open("/tmp/ATLASLinkApp_debug.log");
     // Create a ConnectionFactory
     auto_ptr<ConnectionFactory> connectionFactory(
         ConnectionFactory::createCMSConnectionFactory(brokerURI));
@@ -67,6 +67,8 @@ ATLASLinkProducer::ATLASLinkProducer(const std::string &brokerURI,
   }
 }
 
+ATLASLinkProducer::~ATLASLinkProducer() { cleanup(); }
+
 void ATLASLinkProducer::cleanup() {
   if (connection != NULL) {
     try {
@@ -91,17 +93,35 @@ void ATLASLinkProducer::cleanup() {
   }
 }
 
-void ATLASLinkProducer::sendToMQString(const string &textmsg) {
-        if (session != nullptr) {
-                cout << "Creating text message for: " << textmsg << endl;
-                TextMessage *msg = session->createTextMessage(textmsg);
-                cout << "Setting properties..." << endl;
-                msg->setStringProperty("USER_NAME", "MOOSIvp");
-                msg->setIntProperty("USER_CODE", 42);
-                producer->send(msg);
-                cout << "Message sent: " << textmsg << endl;
-                delete msg;
-        } else {
-                cout << "session is null!" << endl;
-        }
+// void ATLASLinkProducer::sendToMQString(const string &textmsg) {
+//        if (session != nullptr) {
+//                cout << "Creating text message for: " << textmsg << endl;
+//                TextMessage *msg = session->createTextMessage(textmsg);
+//                cout << "Setting properties..." << endl;
+//                // FIX: real properties here
+//                msg->setStringProperty("USER_NAME", "MOOSIvp");
+//                msg->setIntProperty("USER_CODE", 42);
+//                producer->send(msg);
+//                cout << "Message sent: " << textmsg << endl;
+//                delete msg;
+//        } else {
+//                cout << "session is null!" << endl;
+//        }
+//}
+
+void ATLASLinkProducer::sendToMQ(CMOOSMsg &mooseMsg) {
+  if (session != nullptr) {
+    string activeMQMsg = mooseMsg.GetKey() + "=" + mooseMsg.GetAsString();
+    TextMessage *msg = session->createTextMessage(activeMQMsg);
+    // FIX: real properties here
+    msg->setStringProperty("USER_NAME", "MOOSIvp");
+    msg->setIntProperty("USER_CODE", 42);
+    producer->send(msg);
+    cout << "ActiveMQ Message sent: " << activeMQMsg << endl;
+    debugLog << "ActiveMQ Message sent: " << activeMQMsg << endl;
+    delete msg;
+  } else {
+          cout << "Cannot sendToMQ - session is null! ActiveMQ not started " << endl;
+          debugLog << "Cannot sendToMQ - session is null! ActiveMQ not started " << endl;
+  }
 }

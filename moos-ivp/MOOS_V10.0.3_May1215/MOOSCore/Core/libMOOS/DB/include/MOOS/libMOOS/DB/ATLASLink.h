@@ -76,7 +76,7 @@ private:
     //("(.+)\\|(\w+)=(\w+)");
     // FIX: set this regex here rather than in the
     // ATLAS link code
-    
+
     void onMessage(const Message* message);
     void cleanup();
 

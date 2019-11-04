@@ -15,6 +15,7 @@
 (defparameter *counter* 0)
 (defparameter *inbound* "/topic/FAULTS-ATLASLINKAPP-targ_shoreside.moos")
 (defparameter *outbound* "/topic/FAULTS-SIM-TO-ATLAS")
+(defparameter *inbound-message-hooks* (list))
 
 (defparameter *fault* nil)
 
@@ -69,8 +70,7 @@
           :collect (cons v (make-search-zone :left (+ x (* (mod i hcount) subwidth))
                                      :bottom (+ y (* (floor i vcount) subheight))
                                      :width subwidth
-                                     :height subheight)
-                                     ))))
+                                     :height subheight)))))
 
 (defun compute-polygon-path (sz &key (step 10.0))
 "Returns a polygon path to sweep the given search zone,
@@ -146,8 +146,6 @@ in a horizontal/vertical pattern"
   (set-speed :uuv-name "ella" :speed 0.5)
   (set-polygon :uuv-name "ella" :polygon pl-ella))
 
-;; Need to read UHZ_DETECTION_REPORT from the shoreside
-
 (defun send-multiple-vehicles ()
   (let ((subzones (subdivide-search-zone *whole-region*
                                          :vehicles
@@ -155,5 +153,15 @@ in a horizontal/vertical pattern"
     (mapcar (lambda (v-zone)
               (set-speed :uuv-name (car v-zone) :speed 2.0)
               (set-polygon :uuv-name (car v-zone)
-                           :polygon (compute-polygon-path (cdr v-zone) :step 5.)))
-              subzones)))
+                           :polygon (compute-polygon-path (cdr v-zone) :step 5.))
+              v-zone)
+            subzones)))
+
+(defun start-collective-intelligence ()
+  (format t "SHORESIDE COLLECTIVE INTELLIGENCE")
+  (format t "Starting an ActiveMQ connection...~%")
+  (start)
+  (sleep 5)
+  (format t "Partitioning the grid region... sending out the vehicles to 4 zones~%")
+  (send-multiple-vehicles)
+  (format t "Sensor detections will be logged below..."))

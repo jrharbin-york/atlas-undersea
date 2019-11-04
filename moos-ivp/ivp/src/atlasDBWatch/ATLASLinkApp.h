@@ -17,10 +17,13 @@
 #include <cms/ExceptionListener.h>
 #include <cms/MessageListener.h>
 
+#include "MOOS/libMOOS/MOOSLib.h"
+
 #include <regex>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <memory>
 
 using namespace activemq::core;
@@ -41,6 +44,8 @@ private:
     bool sessionTransacted;
     std::string brokerURI;
 
+    ofstream debugLog;
+
     void cleanup();
 
 public:
@@ -48,5 +53,6 @@ public:
                       const std::string& atlas_link_extraname);
     ~ATLASLinkProducer();
 
-    void sendToMQString(const string &textmsg);
+    //void sendToMQString(const string &textmsg);
+    void sendToMQ(CMOOSMsg &mooseMsg);
 };
