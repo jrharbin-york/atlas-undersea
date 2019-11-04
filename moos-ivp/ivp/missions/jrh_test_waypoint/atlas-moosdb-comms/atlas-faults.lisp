@@ -17,6 +17,11 @@
 (defparameter *inbound-message-hooks* (list))
 (defparameter *label-to-find* 2)
 
+(defparameter *malicious-found* nil)
+(defparameter *malicious-sz-halfwidth* 20d0)
+(defparameter *malicious-sz-halfheight* 20d0)
+(defparameter *malicious-sz-step* 5d0)
+
 (defparameter *fault* nil)
 
 (defun fault-on ()
@@ -25,6 +30,10 @@
 (defun fault-off ()
   (setf *fault* nil))
 
+(defun get-key (msg)
+  "Extract the key (var name) by splitting before the equals"
+  (subseq msg 0 (position #\= msg)))
+
 (defun handle-inbound (frame)
   (incf *counter*)
   (unless *fault*
@@ -32,7 +41,9 @@
            (key (get-key incoming-msg)))
       (mapcar (lambda (key-and-hook)
                 (when (string-equal (car key-and-hook) key)
-                      (funcall (cdr key-and-hook) incoming-msg *counter*)))
+		  (progn
+		    (format t "key=~A~%" (car key-and-hook))
+		    (funcall (cdr key-and-hook) incoming-msg *counter*))))
               *inbound-message-hooks*)
       (format t "MSG: ~A:~A~%" *counter* incoming-msg))))
 
@@ -162,17 +173,56 @@ in a horizontal/vertical pattern"
               v-zone)
             subzones)))
 
+(defun send-vehicle-to-region-around-xy-zone (&key vehicle x y)
+  "Sends the given vehicle in for a detailed scan"
+  (let ((detailed-sz (make-search-zone :left (- x *malicious-sz-halfwidth*)
+				       :width (* 2 *malicious-sz-halfwidth*)
+				       :bottom (- y *malicious-sz-halfheight*)
+				       :height (* 2 *malicious-sz-halfheight*))))
+    (set-polygon :uuv-name vehicle
+		 :polygon (compute-polygon-path detailed-sz :step *malicious-sz-step*))))
+
+(defun get-xy-coords-from-msg (msgtext)
+  (multiple-value-bind (fullstr res)
+      (cl-ppcre:scan-to-strings ".*x=(-?[0-9]+),y=(-?[0-9]+).*" msgtext)
+    (declare (ignore fullstr))
+    (cons (parse-float:parse-float (aref res 0) :type 'double-float)
+	  (parse-float:parse-float (aref res 1) :type 'double-float))))
+
+(defun vehicle-to-send (xy-coords)
+  (declare (ignore xy-coords))
+  ;; FIX: just hardcoding frank as the vehicle to send  
+  "frank")
+
 (defun dispatch-closest-vehicle-on-detection (msgtext count)
   "Handles a detection message"
+  (declare (ignore count))
   ;; Need to track the coordinates of the vehicles from MOOS messages
   ;; Check the field label
   ;; If there is a match, find the closest vehicles
   ;; dispatch it in a polygon trajectory around the target!
   ;; This only has to be done once per the detection???
+  (format t "Detection observed...~%")
+  ;; For now, just assume label=2 is the hostile target
+  (if (cl-ppcre:scan-to-strings "label=2" msgtext)
+      (progn
+	(let* ((xy-coords (get-xy-coords-from-msg msgtext))
+	       (chosen (vehicle-to-send xy-coords))
+	       (x (car xy-coords))
+	       (y (cdr xy-coords)))
+	  (format t "LABEL 2 FOUND!.. dispatching vehicle ~A to zone around ~A~%"
+		  chosen xy-coords)
+	  (send-vehicle-to-region-around-xy-zone :vehicle "frank" :x x :y y)
+	  (setf *malicious-found* t)))))
+
+(defun update-vehicle-position (msgtext count)
+  (declare (ignore msgtext count))
+  "Handles a vehicle position update message"
+  ;; Save the position of the vehicle
   nil)
 
 (defun register-hook (&key key func)
-  (push (cons key #'func) *inbound-message-hooks*))
+  (push (cons key (symbol-function func)) *inbound-message-hooks*))
 
 (defun clear-hooks ()
   (setf *inbound-message-hooks* nil))
@@ -180,19 +230,19 @@ in a horizontal/vertical pattern"
 (defun setup-hooks-for-ci ()
   (clear-hooks)
   (register-hook :key "UHZ_DETECTION_REPORT"
-                 :func dispatch-closest-vehicle-on-detection)
+                 :func 'dispatch-closest-vehicle-on-detection)
   ;; FIX: set up the coords here
   (register-hook :key "<coords>"
-                 :func update-vehicle-position))
+                 :func 'update-vehicle-position))
 
 (defun start-collective-intelligence ()
   (format t "SHORESIDE COLLECTIVE INTELLIGENCE~%")
   (setup-hooks-for-ci)
   (format t "Starting an ActiveMQ connection...~%")
   (start)
-  (format t "Vehicles are ~A" *all-vehicles*)
+  (format t "Vehicles are ~A~%" *all-vehicles*)
   (sleep 5)
-  (format t "Partitioning the grid region... sending out the vehicles to ~A zones~%"
-          (length *vehicles*))
+  (format t "Partitioning the grid region...~%Sending out the vehicles to ~A zones~%"
+          (length *all-vehicles*))
   (send-multiple-vehicles)
   (format t "Sensor detections will be logged below..."))

@@ -5,5 +5,5 @@
   :version "0.0.1"
   :licence "MIT-style license"
   :serial t
-  :depends-on (:bordeaux-threads :cl-stomp)
+  :depends-on (:bordeaux-threads :cl-stomp :cl-ppcre :parse-float)
   :components ((:file "atlas-faults")))
