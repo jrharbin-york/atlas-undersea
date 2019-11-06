@@ -1,4 +1,3 @@
-// ActiveMQ headers
 #include <activemq/core/ActiveMQConnectionFactory.h>
 #include <activemq/library/ActiveMQCPP.h>
 #include <activemq/util/Config.h>
@@ -17,108 +16,103 @@
 #include <decaf/util/concurrent/CountDownLatch.h>
 
 #include "MOOS/libMOOS/MOOSLib.h"
+#include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+
 #include "ATLASDBWatch_App.h"
 #include "ATLASLinkApp.h"
 
 #include "MBUtils.h"
+
+#include <functional>
 #include <iterator>
 
 using namespace std;
 
-ATLASDBWatch::ATLASDBWatch() {
-    activemq::library::ActiveMQCPP::initializeLibrary();
-    // FIX: hardcoded path
-    prod = new ATLASLinkProducer("failover:(tcp://localhost:61616)", "targ_shoreside.moos");
-    m_tally_recd = 0;
-    m_tally_sent = 0;
-    m_iterations = 0;
-    m_start_time_postings = 0;
-    m_start_time_iterations = 0;
-}
+ATLASDBWatch::ATLASDBWatch() {}
 
 //---------------------------------------------------------
 // Procedure: OnNewMail
-
 bool ATLASDBWatch::OnNewMail(MOOSMSG_LIST &NewMail) {
   MOOSMSG_LIST::iterator p;
   for (p = NewMail.begin(); p != NewMail.end(); p++) {
     CMOOSMsg &msg = *p;
     string key = msg.GetKey();
-
-    // FIX: hardcoded variable names
-    if (key == "UHZ_DETECTION_REPORT") {
-            cout << "UHZ_DETECTION_REPORT seen" << endl;
-            prod->sendToMQ(msg);
-    }
+    cout << key << " seen" << endl;
+    prod->sendToMQ(msg);
   }
   return true;
 }
 
+void ATLASDBWatch::SetupActiveMQ() {
+  activemq::library::ActiveMQCPP::initializeLibrary();
+  prod = new ATLASLinkProducer(mq_activemq_url, mq_topic_name);
+}
+
 //---------------------------------------------------------
 // Procedure: OnConnectToServer
-
 bool ATLASDBWatch::OnConnectToServer() {
+  SetupActiveMQ();
+  cout << "SetupActiveMQ() done" << endl;
   RegisterVariables();
-  return (true);
+  cout << "RegisterVariables() done" << endl;
+  return true;
 }
 
 //------------------------------------------------------------
 // Procedure: RegisterVariables
-
 void ATLASDBWatch::RegisterVariables() {
-  m_Comms.Register("UHZ_DETECTION_REPORT", 0);
+  for (string var : vars_to_watch) {
+    m_Comms.Register(var, 0);
+    std::cout << "Registering with MOOSDB for variable " << var << endl;
+  }
 }
 
 //---------------------------------------------------------
 // Procedure: Iterate()
+bool ATLASDBWatch::Iterate() { return true; }
 
-bool ATLASDBWatch::Iterate() {
-  m_iterations++;
+bool ATLASDBWatch::ScanForVariable(const string &fileLine,
+                                   const string &targetVar,
+                                   function<void(string)> matchAction) {
+  string sLine = fileLine;
+  sLine = stripBlankEnds(sLine);
+  string sVarName = MOOSChomp(sLine, "=");
+  if (MOOSStrCmp(sVarName, targetVar)) {
+    if (!strContains(sLine, " ")) {
+      stripBlankEnds(sLine);
+      matchAction(sLine);
+      return true;
+    } else
+      return false;
+  } else
+    return false;
+}
 
-  unsigned int i, amt = (m_tally_recd - m_tally_sent);
-  for (i = 0; i < amt; i++) {
-    m_tally_sent++;
-    Notify(m_outgoing_var, m_tally_sent);
+// Process the mission file and determine the variables to watch
+// store them to vars_to_watch, set other variables when found
+void ATLASDBWatch::ProcessMissionFile() {
+  STRING_LIST sParams;
+  m_MissionReader.EnableVerbatimQuoting(false);
+  m_MissionReader.GetConfiguration(GetAppName(), sParams);
+
+  STRING_LIST::iterator p;
+  for (p = sParams.begin(); p != sParams.end(); p++) {
+    ScanForVariable(*p, "WATCH_VAR",
+                    [this](string foundVal) { this->vars_to_watch.push_back(foundVal); });
+    ScanForVariable(*p, "ACTIVEMQ_URL",
+                    [this](string foundVal) { this->mq_activemq_url = foundVal; });
+    ScanForVariable(*p, "WATCH_VAR",
+                    [this](string foundVal) { this->mq_topic_name = foundVal; });
   }
-
-  // If this is the first iteration just note the start time, otherwise
-  // note the currently calculated frequency and post it to the DB.
-  if (m_start_time_iterations == 0)
-    m_start_time_iterations = MOOSTime();
-  else {
-    double delta_time = (MOOSTime() - m_start_time_iterations);
-    double frequency = 0;
-    if (delta_time > 0)
-      frequency = (double)(m_iterations) / delta_time;
-    Notify(m_outgoing_var + "_ITER_HZ", frequency);
-  }
-
-  // If this is the first time a received msg has been noted, just
-  // note the start time, otherwise calculate and post the frequency.
-  if (amt > 0) {
-    if (m_start_time_postings == 0)
-      m_start_time_postings = MOOSTime();
-    else {
-      double delta_time = (MOOSTime() - m_start_time_postings);
-      double frequency = 0;
-      if (delta_time > 0)
-        frequency = (double)(m_tally_sent) / delta_time;
-      Notify(m_outgoing_var + "_POST_HZ", frequency);
-    }
-  }
-  return (true);
 }
 
 //---------------------------------------------------------
 // Procedure: OnStartUp()
 //      Note: happens before connection is open
-
 bool ATLASDBWatch::OnStartUp() {
-  STRING_LIST sParams;
-  m_MissionReader.EnableVerbatimQuoting(false);
-  m_MissionReader.GetConfiguration(GetAppName(), sParams);
-
-  RegisterVariables();
-  cout << "RegisterVariables() done" << endl;
+  ProcessMissionFile();
+  for (string var : vars_to_watch) {
+      cout << "Watching variable " << var << endl;
+  };
   return true;
 }

@@ -28,7 +28,7 @@ include_directories(${APR_INCLUDE_DIR} ${ActiveMQ_INCLUDE_DIR})
 
 #find_library(ActiveMQ_LIBRARY
 #  NAMES activemq-cpp)
-set(ActiveMQ_LIBRARY "/home/userfs/j/jrh512/source/activemq-cpp-install/lib/libactivemq-cpp.so")
+# set(ActiveMQ_LIBRARY "/home/userfs/j/jrh512/source/activemq-cpp-install/lib/libactivemq-cpp.so")
 
 
 ADD_EXECUTABLE(ATLASDBWatch ${SRC})

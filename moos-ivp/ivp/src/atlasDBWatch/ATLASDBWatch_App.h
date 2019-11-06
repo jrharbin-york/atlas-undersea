@@ -1,11 +1,12 @@
 #pragma once
 
-#include "MOOS/libMOOS/MOOSLib.h"
-#include "ATLASLinkApp.h"
+#include <functional>
 
-class ATLASDBWatch : public CMOOSApp
-{
- public:
+#include "ATLASLinkApp.h"
+#include "MOOS/libMOOS/MOOSLib.h"
+
+class ATLASDBWatch : public CMOOSApp {
+public:
   ATLASDBWatch();
   virtual ~ATLASDBWatch() {}
 
@@ -14,22 +15,14 @@ class ATLASDBWatch : public CMOOSApp
   bool OnConnectToServer();
   bool OnStartUp();
 
-  void setIncomingVar(std::string s) {m_incoming_var=s;}
-  void setOutgoingVar(std::string s) {m_outgoing_var=s;}
-
- protected:
-  ATLASLinkProducer * prod;
+protected:
+  ATLASLinkProducer *prod;
   void RegisterVariables();
+  void SetupActiveMQ();
+  void ProcessMissionFile();
+  bool ScanForVariable(const string &fileLine, const string &targetVar, function <void(string)> matchAction);
 
- protected: // State variables
-  unsigned long int m_tally_recd;
-  unsigned long int m_tally_sent;
-  unsigned long int m_iterations;
-
- protected: // Configuration variables
-  std::string       m_incoming_var;
-  std::string       m_outgoing_var;
-
-  double            m_start_time_postings;
-  double            m_start_time_iterations;
+  vector<string> vars_to_watch;
+  string mq_activemq_url;
+  string mq_topic_name;
 };

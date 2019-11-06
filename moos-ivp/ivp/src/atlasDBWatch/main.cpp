@@ -21,9 +21,9 @@
 /* <http://www.gnu.org/licenses/>.                               */
 /*****************************************************************/
 
+#include "ATLASDBWatch_App.h"
 #include "ColorParse.h"
 #include "MBUtils.h"
-#include "ATLASDBWatch_App.h"
 #include "ReleaseInfo.h"
 
 using namespace std;

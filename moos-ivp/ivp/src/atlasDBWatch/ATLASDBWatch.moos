@@ -1,12 +1,10 @@
-=============================================================== 
-pXRelay Example MOOS Configuration                              
-=============================================================== 
-                                                                
-ProcessConfig = pXRelay                                         
+ProcessConfig = ATLASDBWatch
 {                                                               
-  AppTick   = 4                                                 
-  CommsTick = 4                                                 
-                                                                
-  OUTGOING_VAR = APPLES                                         
-  INCOMING_VAR = PEARS                                          
+  AppTick   = 4
+  CommsTick = 4
+
+  ACTIVEMQ_URL = failover:(tcp://localhost:61616)
+  ACTIVEMQ_TOPIC=FAULTS-ATLASLINKAPP-targ_shoreside.moos
+  
+  WATCH_VAR = UHZ_DETECTION_REPORT
 }                     

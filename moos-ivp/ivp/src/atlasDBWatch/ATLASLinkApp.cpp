@@ -33,7 +33,7 @@ using namespace cms;
 using namespace std;
 
 ATLASLinkProducer::ATLASLinkProducer(const std::string &brokerURI,
-                                     const std::string &atlas_link_extraname) {
+                                     const std::string &activeMQTopic) {
   try {
     debugLog.open("/tmp/ATLASLinkApp_debug.log");
     // Create a ConnectionFactory
@@ -51,13 +51,7 @@ ATLASLinkProducer::ATLASLinkProducer(const std::string &brokerURI,
       session = connection->createSession(Session::AUTO_ACKNOWLEDGE);
     }
 
-    // Determine the topic name
-    ostringstream topicname;
-    topicname << "FAULTS-ATLASLINKAPP";
-    if (!atlas_link_extraname.empty())
-      topicname << "-" << atlas_link_extraname;
-
-    destination = session->createTopic(topicname.str());
+    destination = session->createTopic(activeMQTopic);
 
     // Create a MessageProducer from the Session to the Topic or Queue
     producer = session->createProducer(destination);
@@ -92,22 +86,6 @@ void ATLASLinkProducer::cleanup() {
     e.printStackTrace();
   }
 }
-
-// void ATLASLinkProducer::sendToMQString(const string &textmsg) {
-//        if (session != nullptr) {
-//                cout << "Creating text message for: " << textmsg << endl;
-//                TextMessage *msg = session->createTextMessage(textmsg);
-//                cout << "Setting properties..." << endl;
-//                // FIX: real properties here
-//                msg->setStringProperty("USER_NAME", "MOOSIvp");
-//                msg->setIntProperty("USER_CODE", 42);
-//                producer->send(msg);
-//                cout << "Message sent: " << textmsg << endl;
-//                delete msg;
-//        } else {
-//                cout << "session is null!" << endl;
-//        }
-//}
 
 void ATLASLinkProducer::sendToMQ(CMOOSMsg &mooseMsg) {
   if (session != nullptr) {
