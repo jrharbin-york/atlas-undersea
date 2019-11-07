@@ -107,6 +107,22 @@ void ATLASDBWatch::ProcessMissionFile() {
   }
 }
 
+// Get secondary paramters such as the user name/code for ActiveMQ messages
+// Must be called after ActiveMQ is setup
+void ATLASDBWatch::SecondaryProcessMissionFile() {
+    STRING_LIST sParams;
+    m_MissionReader.EnableVerbatimQuoting(false);
+    m_MissionReader.GetConfiguration(GetAppName(), sParams);
+
+    STRING_LIST::iterator p;
+    for (p = sParams.begin(); p != sParams.end(); p++) {
+        ScanForVariable(*p, "ACTIVEMQ_USERCODE",
+                        [this](string foundVal) { this->prod->setUserCode(stoi(foundVal)); });
+        ScanForVariable(*p, "ACTIVEMQ_USERNAME",
+                        [this](string foundVal) { this->prod->setUserName(foundVal); });
+    }
+}
+
 //---------------------------------------------------------
 // Procedure: OnStartUp()
 //      Note: happens before connection is open
@@ -116,6 +132,7 @@ bool ATLASDBWatch::OnStartUp() {
       debug << "Watching variable " << var << "\n";
   };
   SetupActiveMQ();
+  SecondaryProcessMissionFile();
   cout << "SetupActiveMQ() done" << endl;
   RegisterVariables();
   cout << "RegisterVariables() done" << endl;

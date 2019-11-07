@@ -20,6 +20,7 @@ protected:
   void RegisterVariables();
   void SetupActiveMQ();
   void ProcessMissionFile();
+  void SecondaryProcessMissionFile();
   bool ScanForVariable(const string &fileLine, const string &targetVar, function <void(string)> matchAction);
 
   vector<string> vars_to_watch;

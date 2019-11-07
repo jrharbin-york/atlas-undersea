@@ -44,6 +44,10 @@ private:
     bool sessionTransacted;
     std::string brokerURI;
 
+    // These can be overriden in the configuration file
+    int activeMQUserCode = 42;
+    string activeMQUserName = "ATLASLinkApp";
+
     ofstream debugLog;
 
     void cleanup();
@@ -52,6 +56,9 @@ public:
     ATLASLinkProducer(const std::string& brokerURI,
                       const std::string& atlas_link_extraname);
     ~ATLASLinkProducer();
+
+    void setUserCode(int userCode);
+    void setUserName(string userName);
 
     //void sendToMQString(const string &textmsg);
     void sendToMQ(CMOOSMsg &mooseMsg);

@@ -96,8 +96,8 @@ void ATLASLinkProducer::sendToMQ(CMOOSMsg &mooseMsg) {
     string activeMQMsg = mooseMsg.GetKey() + "=" + mooseMsg.GetAsString();
     TextMessage *msg = session->createTextMessage(activeMQMsg);
     // FIX: real properties here
-    msg->setStringProperty("USER_NAME", "MOOSIvp");
-    msg->setIntProperty("USER_CODE", 42);
+    msg->setStringProperty("USER_NAME", activeMQUserName);
+    msg->setIntProperty("USER_CODE", activeMQUserCode);
     producer->send(msg);
     cout << "ActiveMQ Message sent: " << activeMQMsg << endl;
     debugLog << "ActiveMQ Message sent: " << activeMQMsg << endl;
@@ -106,4 +106,12 @@ void ATLASLinkProducer::sendToMQ(CMOOSMsg &mooseMsg) {
           cout << "Cannot sendToMQ - session is null! ActiveMQ not started " << endl;
           debugLog << "Cannot sendToMQ - session is null! ActiveMQ not started " << endl;
   }
+}
+
+void ATLASLinkProducer::setUserCode(int userCode) {
+        activeMQUserCode = userCode;
+}
+
+void ATLASLinkProducer::setUserName(string userName) {
+        activeMQUserName = userName;
 }
