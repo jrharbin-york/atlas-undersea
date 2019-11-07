@@ -23,6 +23,6 @@ protected:
   bool ScanForVariable(const string &fileLine, const string &targetVar, function <void(string)> matchAction);
 
   vector<string> vars_to_watch;
-  string mq_activemq_url;
+  int mq_activemq_port;
   string mq_topic_name;
 };

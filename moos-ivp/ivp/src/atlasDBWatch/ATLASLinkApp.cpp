@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ATLASLog.h"
 #include "ATLASLinkApp.h"
 #include "MBUtils.h"
 #include "MOOS/libMOOS/MOOSLib.h"
@@ -35,7 +36,10 @@ using namespace std;
 ATLASLinkProducer::ATLASLinkProducer(const std::string &brokerURI,
                                      const std::string &activeMQTopic) {
   try {
-    debugLog.open("/tmp/ATLASLinkApp_debug.log");
+
+    debug << "ActiveMQ broker URI: " << brokerURI << "\n";
+    debug << "ActiveMQ topic: " << activeMQTopic << "\n";
+          
     // Create a ConnectionFactory
     auto_ptr<ConnectionFactory> connectionFactory(
         ConnectionFactory::createCMSConnectionFactory(brokerURI));

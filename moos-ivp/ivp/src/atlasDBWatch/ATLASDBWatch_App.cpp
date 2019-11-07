@@ -20,6 +20,7 @@
 
 #include "ATLASDBWatch_App.h"
 #include "ATLASLinkApp.h"
+#include "ATLASLog.h"
 
 #include "MBUtils.h"
 
@@ -28,7 +29,8 @@
 
 using namespace std;
 
-ATLASDBWatch::ATLASDBWatch() {}
+ATLASDBWatch::ATLASDBWatch() {
+}
 
 //---------------------------------------------------------
 // Procedure: OnNewMail
@@ -45,16 +47,13 @@ bool ATLASDBWatch::OnNewMail(MOOSMSG_LIST &NewMail) {
 
 void ATLASDBWatch::SetupActiveMQ() {
   activemq::library::ActiveMQCPP::initializeLibrary();
+  string mq_activemq_url = "failover:(tcp://localhost:" + to_string(mq_activemq_port) + ")";
   prod = new ATLASLinkProducer(mq_activemq_url, mq_topic_name);
 }
 
 //---------------------------------------------------------
 // Procedure: OnConnectToServer
 bool ATLASDBWatch::OnConnectToServer() {
-  SetupActiveMQ();
-  cout << "SetupActiveMQ() done" << endl;
-  RegisterVariables();
-  cout << "RegisterVariables() done" << endl;
   return true;
 }
 
@@ -69,7 +68,9 @@ void ATLASDBWatch::RegisterVariables() {
 
 //---------------------------------------------------------
 // Procedure: Iterate()
-bool ATLASDBWatch::Iterate() { return true; }
+bool ATLASDBWatch::Iterate() {
+    return true;
+}
 
 bool ATLASDBWatch::ScanForVariable(const string &fileLine,
                                    const string &targetVar,
@@ -99,9 +100,9 @@ void ATLASDBWatch::ProcessMissionFile() {
   for (p = sParams.begin(); p != sParams.end(); p++) {
     ScanForVariable(*p, "WATCH_VAR",
                     [this](string foundVal) { this->vars_to_watch.push_back(foundVal); });
-    ScanForVariable(*p, "ACTIVEMQ_URL",
-                    [this](string foundVal) { this->mq_activemq_url = foundVal; });
-    ScanForVariable(*p, "WATCH_VAR",
+    ScanForVariable(*p, "ACTIVEMQ_PORT",
+                    [this](string foundVal) { this->mq_activemq_port = stoi(foundVal); });
+    ScanForVariable(*p, "ACTIVEMQ_TOPIC",
                     [this](string foundVal) { this->mq_topic_name = foundVal; });
   }
 }
@@ -112,7 +113,11 @@ void ATLASDBWatch::ProcessMissionFile() {
 bool ATLASDBWatch::OnStartUp() {
   ProcessMissionFile();
   for (string var : vars_to_watch) {
-      cout << "Watching variable " << var << endl;
+      debug << "Watching variable " << var << "\n";
   };
+  SetupActiveMQ();
+  cout << "SetupActiveMQ() done" << endl;
+  RegisterVariables();
+  cout << "RegisterVariables() done" << endl;
   return true;
 }

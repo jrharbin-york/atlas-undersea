@@ -204,55 +204,6 @@ ProcessConfig = pMarineViewer
   BUTTON_THREE = PERMUTE   # UTS_FORWARD=0
 }
 
-//--------------------------------------------------------
-// uTimerScript Configuration Block
-
-//ProcessConfig = uTimerScript
-//{
-//  AppTick   = 4
-//  CommsTick = 4
-//  
-//  PAUSED     = false
-//  RESET_MAX  = unlimited
-//  RESET_TIME = end
-//
-//  RANDVAR = varname=X1, min=-25,  max=25,  key=at_post
-//  RANDVAR = varname=Y1, min=-100, max=-50, key=at_post
-//
-//  RANDVAR = varname=X2, min=100,  max=150, key=at_post
-//  RANDVAR = varname=Y2, min=-75,  max=-25, key=at_post
-//
-//  RANDVAR = varname=X3, min=100,  max=150, key=at_post
-//  RANDVAR = varname=Y3, min=-175,  max=-125, key=at_post
-//
-//  RANDVAR = varname=X4, min=-25,  max=25, key=at_post
-//  RANDVAR = varname=Y4, min=-175,  max=-125, key=at_post
-//
-//  EVENT = var=UP_LOITER_1, val="center_assign=$[X2],$[Y2]", time=180 
-//  EVENT = var=UP_LOITER_2, val="center_assign=$[X1],$[Y1]", time=180
-//  EVENT = var=UP_LOITER_3, val="center_assign=$[X4],$[Y4]", time=180 
-//  EVENT = var=UP_LOITER_4, val="center_assign=$[X3],$[Y3]", time=180
-//
-//  EVENT = var=UP_LOITER_1, val="center_assign=$[X1],$[Y1]", time=360
-//  EVENT = var=UP_LOITER_2, val="center_assign=$[X2],$[Y2]", time=360
-//  EVENT = var=UP_LOITER_3, val="center_assign=$[X3],$[Y3]", time=360
-//  EVENT = var=UP_LOITER_4, val="center_assign=$[X4],$[Y4]", time=360
-//
-//  EVENT = var=UP_LOITER_1, val="center_assign=$[X4],$[Y4]", time=540
-//  EVENT = var=UP_LOITER_2, val="center_assign=$[X3],$[Y3]", time=540
-//  EVENT = var=UP_LOITER_3, val="center_assign=$[X2],$[Y2]", time=540
-//  EVENT = var=UP_LOITER_4, val="center_assign=$[X1],$[Y1]", time=540
-//
-//  EVENT = var=UP_LOITER_1, val="center_assign=$[X3],$[Y3]", time=720
-//  EVENT = var=UP_LOITER_2, val="center_assign=$[X4],$[Y4]", time=720
-//  EVENT = var=UP_LOITER_3, val="center_assign=$[X1],$[Y1]", time=720
-//  EVENT = var=UP_LOITER_4, val="center_assign=$[X2],$[Y2]", time=720
-//}
-//
-
-//--------------------------------------------------------
-// uProcessWatch Configuration Block
-
 ProcessConfig = uProcessWatch
 {
   AppTick   = 1
@@ -274,4 +225,19 @@ ProcessConfig = uFldHazardSensor
  sensor_config = width=25, exp=4, pclass=0.80  
  sensor_config = width=50, exp=2, pclass=0.60  
  sensor_config = width=10, exp=6, pclass=0.93  
-}   
+}
+
+ProcessConfig = ATLASDBWatch
+{                                                               
+  AppTick   = 4
+  CommsTick = 4
+
+  ACTIVEMQ_PORT=61616
+  ACTIVEMQ_TOPIC=FAULTS-ATLASLINKAPP-targ_shoreside.moos
+  
+  WATCH_VAR = UHZ_DETECTION_REPORT
+  WATCH_VAR = NODE_REPORT_ELLA
+  WATCH_VAR = NODE_REPORT_FRANK
+  WATCH_VAR = NODE_REPORT_GILDA
+  WATCH_VAR = NODE_REPORT_HENRY
+}                     

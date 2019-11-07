@@ -22,6 +22,9 @@
 /*****************************************************************/
 
 #include "ATLASDBWatch_App.h"
+#include "ATLASLog.h"
+#include "ATLASDB_Info.h"
+
 #include "ColorParse.h"
 #include "MBUtils.h"
 #include "ReleaseInfo.h"
@@ -29,13 +32,37 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  string mission_file = "ATLASDBWatch.moos";
-  string run_command = argv[0];
+        string mission_file;
+        string verbose_setting;
+        string run_command = argv[0];
+
+  for(int i=1; i<argc; i++) {
+          string argi = argv[i];
+          if((argi=="-v") || (argi=="--version") || (argi=="-version"))
+                  showReleaseInfoAndExit();
+          else if((argi=="-e") || (argi=="--example") || (argi=="-example"))
+                  showExampleConfigAndExit();
+          else if((argi == "-h") || (argi == "--help") || (argi=="-help"))
+                  showHelpAndExit();
+          else if((argi == "-i") || (argi == "--interface"))
+                  showInterfaceAndExit();
+          else if(strBegins(argi, "--verbose="))
+                  verbose_setting = argi.substr(10);
+          else if(strEnds(argi, ".moos") || strEnds(argi, ".moos++"))
+                  mission_file = argv[i];
+          else if(strBegins(argi, "--alias="))
+                  run_command = argi.substr(8);
+          else if(i==2)
+                  run_command = argi;
+  }
+  
+  if(mission_file == "")
+    showHelpAndExit();
 
   cout << termColor("green");
   cout << "ATLASDBWatch_App launching as " << run_command << endl;
   cout << termColor() << endl;
-
+  debug << "Mission file: " << mission_file.c_str();
   ATLASDBWatch atlasapp;
   atlasapp.Run(run_command.c_str(), mission_file.c_str(), argc, argv);
   return 0;

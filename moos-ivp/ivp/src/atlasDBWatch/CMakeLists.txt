@@ -1,6 +1,5 @@
 #--------------------------------------------------------
-# The CMakeLists.txt for:                         pXRelay
-# Author(s):                                Mike Benjamin
+# The CMakeLists.txt for:                    ATLASDBWatch
 #--------------------------------------------------------
 
 # Set System Specific Libraries
@@ -15,9 +14,10 @@ endif (${WIN32})
 
 SET(SRC
   ATLASDBWatch_App.cpp
+  ATLASDB_Info.cpp
   ATLASLinkApp.cpp
-  main.cpp
-  )
+  ATLASLog.cpp
+  main.cpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -28,7 +28,7 @@ include_directories(${APR_INCLUDE_DIR} ${ActiveMQ_INCLUDE_DIR})
 
 #find_library(ActiveMQ_LIBRARY
 #  NAMES activemq-cpp)
-# set(ActiveMQ_LIBRARY "/home/userfs/j/jrh512/source/activemq-cpp-install/lib/libactivemq-cpp.so")
+set(ActiveMQ_LIBRARY "/home/userfs/j/jrh512/source/activemq-cpp-install/lib/libactivemq-cpp.so")
 
 
 ADD_EXECUTABLE(ATLASDBWatch ${SRC})
